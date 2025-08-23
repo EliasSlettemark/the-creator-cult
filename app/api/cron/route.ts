@@ -26,7 +26,7 @@ export async function GET() {
   const { data: accounts, error } = await supabase
     .from("accounts")
     .select("*")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false }) as { data: Account[] | null; error: any };
 
   if (error) {
     console.log("error", error);
@@ -40,6 +40,19 @@ export async function GET() {
     return NextResponse.json({ error: "No accounts found" }, { status: 404 });
   }
 
+  // Define the account type
+  type Account = {
+    id: string;
+    user_id: string;
+    username?: string;
+    name?: string;
+    display_name?: string;
+    profile_pic_url?: string;
+    avatar_url?: string;
+    access_token: string;
+    created_at: string;
+  };
+
   const latestAccounts = accounts.reduce(
     (acc, account) => {
       if (
@@ -50,7 +63,7 @@ export async function GET() {
       }
       return acc;
     },
-    {} as Record<string, any>
+    {} as Record<string, Account>
   );
 
   const accountsArray = Object.values(latestAccounts);
@@ -129,7 +142,7 @@ export async function GET() {
 
         if (!users[userId]) {
           users[userId] = {
-            name: account.username || account.name,
+            name: account.username || account.name || account.display_name || "Unknown User",
             views_this_week: 0,
             views_this_month: 0,
             videos_this_month: 0,
@@ -162,8 +175,8 @@ export async function GET() {
 
         const upsertData = {
           user_id: account.user_id,
-          username: account.username || account.display_name,
-          profile_pic_url: account.profile_pic_url || account.avatar_url,
+          username: account.username || account.display_name || account.name || "Unknown User",
+          profile_pic_url: account.profile_pic_url || account.avatar_url || "",
           views_this_week: users[account.user_id].views_this_week,
           views_this_month: users[account.user_id].views_this_month,
           videos_this_month: users[account.user_id].videos_this_month,

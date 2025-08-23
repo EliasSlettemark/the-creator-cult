@@ -1,5 +1,5 @@
 import getSdk from "@/lib/get-user-sdk/app";
-import { cached as findProduct } from "@/lib/has-product";
+import findProduct from "@/lib/has-product";
 import Head from "next/head";
 import Image from "next/image";
 import { redirect } from "next/navigation";
