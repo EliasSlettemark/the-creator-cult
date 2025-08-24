@@ -21,7 +21,7 @@ async function middleware(req: NextRequestWithAuth) {
   if (!user) return NextResponse.redirect(new URL("/auth", req.nextUrl.origin));
 
   const membership = await findProduct(sdk, ALLOWED_PRODUCTS);
-  
+
   if (membership && req.nextUrl.pathname === "/") {
     return NextResponse.redirect(new URL("/dashboard", req.nextUrl.origin));
   }
