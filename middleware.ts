@@ -12,7 +12,11 @@ const RECOMMENDED_PLAN = process.env.NEXT_PUBLIC_RECOMMENDED_PLAN_ID || "";
 async function middleware(req: NextRequestWithAuth) {
   console.log(`🔍 [MIDDLEWARE] Processing request to: ${req.nextUrl.pathname}`);
   console.log(`🔍 [MIDDLEWARE] Request method: ${req.method}`);
-  console.log(`🔍 [MIDDLEWARE] Request headers:`, Object.fromEntries(req.headers.entries()));
+  console.log(`🔍 [MIDDLEWARE] NextAuth token:`, {
+    hasToken: !!req.nextauth.token,
+    hasAccessToken: !!req.nextauth.token?.accessToken,
+    userId: req.nextauth.token?.id
+  });
 
   // Skip middleware for auth page and OAuth callback routes to prevent redirect loops
   if (req.nextUrl.pathname === "/auth" || 
@@ -26,6 +30,18 @@ async function middleware(req: NextRequestWithAuth) {
   }
 
   console.log(`🔍 [MIDDLEWARE] Checking authentication for: ${req.nextUrl.pathname}`);
+
+  // First check if user has a NextAuth session
+  if (!req.nextauth.token) {
+    console.log(`❌ [MIDDLEWARE] No NextAuth token found, redirecting to auth`);
+    return NextResponse.redirect(new URL("/auth", req.nextUrl.origin));
+  }
+
+  // Check if user has access token for Whop SDK
+  if (!req.nextauth.token.accessToken) {
+    console.log(`❌ [MIDDLEWARE] No access token found, redirecting to auth`);
+    return NextResponse.redirect(new URL("/auth", req.nextUrl.origin));
+  }
 
   try {
     const { sdk } = getSdk(req);

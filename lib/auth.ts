@@ -1,6 +1,7 @@
 import type { NextAuthOptions } from "next-auth";
 
 export const authOptions: NextAuthOptions = {
+  debug: true, // Enable NextAuth debug logging
   providers: [
     {
       id: "whop",
@@ -18,6 +19,7 @@ export const authOptions: NextAuthOptions = {
         email: string;
         profile_pic_url: string;
       }) {
+        console.log("🔍 [NEXTAUTH] Processing Whop profile:", profile);
         return {
           id: profile.id,
           name: profile.username,
@@ -35,6 +37,7 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async redirect({ url, baseUrl }) {
+      console.log("🔍 [NEXTAUTH] Redirect callback:", { url, baseUrl });
       // Allows relative callback URLs
       if (url.startsWith("/")) return `${baseUrl}${url}`;
       // Allows callback URLs on the same origin
@@ -42,11 +45,24 @@ export const authOptions: NextAuthOptions = {
       return baseUrl;
     },
     async session({ session, user, token }) {
+      console.log("🔍 [NEXTAUTH] Session callback:", { 
+        hasSession: !!session, 
+        hasUser: !!user, 
+        hasToken: !!token,
+        tokenId: token.id,
+        tokenAccessToken: !!token.accessToken
+      });
       session.user.id = token.id as string;
       session.accessToken = token.accessToken as string;
       return session;
     },
     async jwt({ token, user, account, profile, isNewUser }) {
+      console.log("🔍 [NEXTAUTH] JWT callback:", { 
+        hasToken: !!token, 
+        hasUser: !!user, 
+        hasAccount: !!account,
+        isNewUser
+      });
       if (user) {
         token.id = user.id;
       }

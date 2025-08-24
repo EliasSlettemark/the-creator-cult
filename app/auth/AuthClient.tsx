@@ -11,6 +11,11 @@ const interVariable = localFont({
 });
 
 const AuthClient = () => {
+  const handleSignIn = () => {
+    console.log("🔍 [AUTH_CLIENT] Sign in button clicked, initiating Whop OAuth");
+    signIn("whop");
+  };
+
   return (
     <html lang="en" suppressHydrationWarning className={interVariable.variable}>
       <body>
@@ -19,7 +24,7 @@ const AuthClient = () => {
             <Button
               variant="classic"
               size="4"
-              onClick={() => signIn("whop")}
+              onClick={handleSignIn}
               className="flex items-center gap-2"
             >
               Sign in with <WhopLogo className="w-[137px] h-auto" />
