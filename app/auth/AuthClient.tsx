@@ -20,6 +20,7 @@ const AuthClient = () => {
               variant="classic"
               size="4"
               onClick={() => signIn("whop")}
+              className="flex items-center gap-2"
             >
               Sign in with <WhopLogo className="w-[137px] h-auto" />
             </Button>
