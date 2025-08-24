@@ -38,9 +38,6 @@ import Image from "next/image";
 import { PageSection } from "@/components/page-section";
 import { getModules } from "@/data/lessons";
 
-// Prevent prerendering - this page inherits the dashboard layout with client hooks
-export const dynamic = 'force-dynamic';
-
 const rank = (views: number): string => {
   if (views >= 3000000) return "ALGO HACKER";
   if (views >= 1000000) return "SCROLLSTOPPA";

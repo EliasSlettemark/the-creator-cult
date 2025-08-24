@@ -1,15 +1,10 @@
-import { SessionProvider } from "next-auth/react";
+import getSdk from "@/lib/get-user-sdk/app";
 import HomeClient from "@/app/dashboard/HomeClient";
 
-// Prevent prerendering - this page uses client-side hooks
-export const dynamic = 'force-dynamic';
+const HomePage = async () => {
+  const { sdk, user } = await getSdk();
 
-const HomePage = () => {
-  return (
-    <SessionProvider>
-      <HomeClient />
-    </SessionProvider>
-  );
+  return <HomeClient user={user} />;
 };
 
 export default HomePage;

@@ -1,13 +1,15 @@
-import { SessionProvider } from "next-auth/react";
-import AuthClient from "./AuthClient";
+import getSdk from "@/lib/get-user-sdk/app";
+import { redirect } from "next/navigation";
+import AuthClient from "@/app/auth/AuthClient";
 
-// Prevent prerendering - this page uses client-side components
-export const dynamic = 'force-dynamic';
+const AuthPage = async () => {
+  const { sdk, user } = await getSdk();
 
-export default function AuthPage() {
-  return (
-    <SessionProvider>
-      <AuthClient />
-    </SessionProvider>
-  );
-}
+  if (user) {
+    redirect("/dashboard");
+  }
+
+  return <AuthClient />;
+};
+
+export default AuthPage;
