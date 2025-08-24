@@ -75,9 +75,18 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const { data: session, status } = useSession();
   const router = useRouter();
 
+  console.log("🔍 [DASHBOARD_LAYOUT] Status:", status);
+  console.log("🔍 [DASHBOARD_LAYOUT] Session:", {
+    hasSession: !!session,
+    hasUser: !!session?.user,
+    userId: session?.user?.id
+  });
+
   useEffect(() => {
+    console.log("🔍 [DASHBOARD_LAYOUT] useEffect triggered, status:", status);
     // Only redirect if session is definitely not available
     if (status === "unauthenticated") {
+      console.log("❌ [DASHBOARD_LAYOUT] User unauthenticated, redirecting to auth");
       router.push("/auth");
     }
   }, [status, router]);
@@ -96,6 +105,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
   // Show loading while checking authentication
   if (status === "loading") {
+    console.log("⏳ [DASHBOARD_LAYOUT] Loading session...");
     return (
       <html
         lang="en"
@@ -115,9 +125,11 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
   // Don't render dashboard if not authenticated
   if (status === "unauthenticated" || !session?.user) {
+    console.log("❌ [DASHBOARD_LAYOUT] Not rendering dashboard, status:", status);
     return null;
   }
 
+  console.log("✅ [DASHBOARD_LAYOUT] Rendering dashboard for user:", session.user.id);
   const user = session.user as any; // Type assertion for now to fix immediate errors
 
   return (
