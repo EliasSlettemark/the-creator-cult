@@ -11,9 +11,9 @@ export type Lesson = {
   title: string;
   description: string;
   video: {
-    thumbnail: string;
+    thumbnail?: string;
     duration: number;
-    url: string;
+    url: string | null;
   } | null;
 };
 

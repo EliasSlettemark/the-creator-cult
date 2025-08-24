@@ -2,6 +2,9 @@ import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import axios from "axios";
 
+// Prevent prerendering - this route should only run at request time
+export const dynamic = 'force-dynamic';
+
 function getStartOfWeek() {
   const now = new Date();
   const day = now.getDay() || 7;

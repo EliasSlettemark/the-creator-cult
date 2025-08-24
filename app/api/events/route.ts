@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { google } from "googleapis";
 
+// Prevent prerendering - this route should only run at request time
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   const auth = new google.auth.GoogleAuth({
     credentials: {
