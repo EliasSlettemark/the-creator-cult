@@ -10,7 +10,8 @@ const ALLOWED_PRODUCTS: string[] =
 const RECOMMENDED_PLAN = process.env.NEXT_PUBLIC_RECOMMENDED_PLAN_ID || "";
 
 async function middleware(req: NextRequestWithAuth) {
-  if (req.nextUrl.pathname === "/auth") {
+  // Skip middleware for auth-related routes
+  if (req.nextUrl.pathname.startsWith("/api/auth") || req.nextUrl.pathname === "/auth") {
     return NextResponse.next();
   }
 
@@ -40,5 +41,5 @@ export default withAuth(middleware, {
 });
 
 export const config = {
-  matcher: ["/", "/dashboard/:path*", "/auth"],
+  matcher: ["/", "/dashboard/:path*"],
 };
