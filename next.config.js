@@ -19,12 +19,11 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "assets.tailwindcss.com",
-        pathname: "/templates/compass/**",
+        hostname: "**",
       },
       {
-        protocol: "https",
-        hostname: "image-useast2a.tiktokv.com",
+        protocol: "http",
+        hostname: "**",
       },
     ],
   },

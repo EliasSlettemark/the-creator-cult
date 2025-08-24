@@ -155,7 +155,6 @@ const lessons = [
       {
         id: "withdrawing-money",
         title: "Withdrawing Your Money",
-        description: "Description",
         video: null,
       },
     ],
