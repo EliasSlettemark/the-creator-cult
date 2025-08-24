@@ -24,6 +24,7 @@ async function middleware(req: NextRequestWithAuth) {
       req.nextUrl.pathname.startsWith("/api/auth/session") ||
       req.nextUrl.pathname.startsWith("/api/auth/signin") ||
       req.nextUrl.pathname.startsWith("/api/auth/signout") ||
+      req.nextUrl.pathname.startsWith("/api/auth/") ||
       req.nextUrl.pathname === "/api/oauth") {
     console.log(`✅ [MIDDLEWARE] Skipping middleware for: ${req.nextUrl.pathname}`);
     return NextResponse.next();
@@ -95,12 +96,12 @@ export default withAuth(middleware, {
 });
 
 export const config = {
-  // Remove /auth from matcher to prevent middleware from running on auth page
-  // Also exclude OAuth callback routes
+  // Only run middleware on specific routes that need protection
+  // Exclude ALL auth-related routes to prevent OAuth flow interference
   matcher: [
     "/", 
     "/dashboard/:path*",
-    // Exclude auth-related API routes
-    "/((?!api/auth|auth).*)"
+    // Explicitly exclude auth-related routes
+    "/((?!api/auth|auth|api/oauth).*)"
   ],
 };
