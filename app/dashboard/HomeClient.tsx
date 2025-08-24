@@ -49,6 +49,7 @@ import {
   Breadcrumbs,
 } from "@/components/breadcrumbs";
 import { CenteredPageLayout } from "@/components/centered-layout";
+import { useSession } from "next-auth/react";
 
 const WhopSVG = () => {
   return (
@@ -143,9 +144,11 @@ const WhopSVG = () => {
   );
 };
 
-export default function Dashboard({ user }: { user: any }) {
+export default function Dashboard() {
   const [accounts, setAccounts] = useState<any[]>([]);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
+  const { data: session } = useSession();
+  const user = session?.user;
   const getDaysLeftInMonth = () => {
     const now = new Date();
     const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);

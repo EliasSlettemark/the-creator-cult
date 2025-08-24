@@ -15,6 +15,9 @@ import { PlayIcon } from "@/icons/play-icon";
 import type { Metadata } from "next";
 import Link from "next/link";
 
+// Prevent prerendering - this page inherits the dashboard layout with client hooks
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: "The Creator Cult - The Ultimate Guide to TikTok Shop",
   description: "The Ultimate Guide to TikTok Shop",

@@ -11,6 +11,9 @@ import { PageSection } from "@/components/page-section";
 import { VideoCard } from "@/components/video-card";
 import type { Metadata } from "next";
 
+// Prevent prerendering - this page inherits the dashboard layout with client hooks
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: "Resources - Compass",
   description:

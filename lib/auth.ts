@@ -27,6 +27,10 @@ export const authOptions: NextAuthOptions = {
       },
     },
   ],
+  pages: {
+    signIn: "/auth",
+    error: "/auth",
+  },
   callbacks: {
     async session({ session, user, token }) {
       session.user.id = token.id as string;
@@ -42,5 +46,14 @@ export const authOptions: NextAuthOptions = {
       }
       return token;
     },
+    async redirect({ url, baseUrl }) {
+      // Handle redirects after authentication
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      else if (new URL(url).origin === baseUrl) return url;
+      return baseUrl + "/dashboard";
+    },
+  },
+  session: {
+    strategy: "jwt",
   },
 };

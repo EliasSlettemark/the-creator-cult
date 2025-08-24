@@ -8,6 +8,9 @@ import {
 import { Card } from "frosted-ui";
 import { Metadata } from "next";
 
+// Prevent prerendering - this page inherits the dashboard layout with client hooks
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: "Resources - Compass",
   description:

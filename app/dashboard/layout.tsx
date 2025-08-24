@@ -23,7 +23,6 @@ import {
   DropdownMenu,
   IconButton,
   Link,
-  Spinner,
   Text,
   TextArea,
   Theme,
@@ -42,6 +41,10 @@ import {
 import { CloseIcon } from "@/icons/close-icon";
 import localFont from "next/font/local";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+
+// Prevent prerendering - this layout uses client-side hooks
+export const dynamic = 'force-dynamic';
 
 const interVariable = localFont({
   src: "../../fonts/InterVariable.woff2",
@@ -59,7 +62,7 @@ const SidebarButton = ({
     <Link href={href}>
       <button
         className={
-          "fui-reset flex items-center text-gray-a10 gap-4 w-full h-[42px] pl-4 rounded-md hover:bg-gray-a3 hover:text-gray-a12 dark:hover:shadow-[0px_0px_0px_1px_var(--gray-a4)_inset] dark:hover:bg-[linear-gradient(_95deg,transparent,transparent,transparent,var(--accent-a4)_)]"
+          "fui-reset flex items-center text-gray-a10 gap-4 w-full h-[42px] pl-4 rounded-md hover:bg-gray-a3 hover:text-gray-a12 dark:hover:shadow-[0px 0px 0px 1px_var(--gray-a4)_inset] dark:hover:bg-[linear-gradient(_95deg,transparent,transparent,transparent,var(--accent-a4)_)]"
         }
       >
         {children}
@@ -67,35 +70,18 @@ const SidebarButton = ({
     </Link>
   );
 };
+
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
   const [windowWidth, setWindowWidth] = useState(0);
   const router = useRouter();
+  const { data: session, status } = useSession();
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch("/api/auth/session");
-        const session = await response.json();
-
-        if (!session || !session.user) {
-          router.push("/auth");
-          return;
-        }
-
-        setUser(session.user);
-      } catch (error) {
-        console.error("Error checking auth:", error);
-        router.push("/auth");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, [router]);
+    if (status === "unauthenticated") {
+      router.push("/auth");
+    }
+  }, [status, router]);
 
   useEffect(() => {
     const getWindowWidth = () => {
@@ -109,7 +95,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     return () => window.removeEventListener("resize", getWindowWidth);
   }, []);
 
-  if (loading) {
+  if (status === "loading") {
     return (
       <html
         lang="en"
@@ -119,13 +105,19 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         <body>
           <Theme asChild appearance="dark" grayColor="gray" accentColor="blue">
             <div className="w-full h-[100vh] bg-gray-1 flex items-center justify-center">
-              <Spinner size="3" />
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
             </div>
           </Theme>
         </body>
       </html>
     );
   }
+
+  if (status === "unauthenticated") {
+    return null;
+  }
+
+  const user = session?.user;
 
   return (
     <html

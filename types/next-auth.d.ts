@@ -5,6 +5,9 @@ declare module "next-auth" {
     accessToken: string;
     user: {
       id: string;
+      name?: string;
+      email?: string;
+      image?: string;
     };
   }
   interface JWT {
