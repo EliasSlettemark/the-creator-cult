@@ -10,8 +10,13 @@ const ALLOWED_PRODUCTS: string[] =
 const RECOMMENDED_PLAN = process.env.NEXT_PUBLIC_RECOMMENDED_PLAN_ID || "";
 
 async function middleware(req: NextRequestWithAuth) {
-  // Skip middleware for auth page to prevent redirect loops
-  if (req.nextUrl.pathname === "/auth") {
+  // Skip middleware for auth page and OAuth callback routes to prevent redirect loops
+  if (req.nextUrl.pathname === "/auth" || 
+      req.nextUrl.pathname.startsWith("/api/auth/callback") ||
+      req.nextUrl.pathname.startsWith("/api/auth/session") ||
+      req.nextUrl.pathname.startsWith("/api/auth/signin") ||
+      req.nextUrl.pathname.startsWith("/api/auth/signout") ||
+      req.nextUrl.pathname === "/api/oauth") {
     return NextResponse.next();
   }
 
@@ -54,5 +59,11 @@ export default withAuth(middleware, {
 
 export const config = {
   // Remove /auth from matcher to prevent middleware from running on auth page
-  matcher: ["/", "/dashboard/:path*"],
+  // Also exclude OAuth callback routes
+  matcher: [
+    "/", 
+    "/dashboard/:path*",
+    // Exclude auth-related API routes
+    "/((?!api/auth|auth).*)"
+  ],
 };
