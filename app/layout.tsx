@@ -2,6 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Theme } from "frosted-ui";
 import { Inter } from "next/font/google";
+import ClientSessionProvider from "./ClientSessionProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -25,7 +26,9 @@ export default function RootLayout({
         className={`${inter.className} antialiased`}
         suppressHydrationWarning
       >
-        {children}
+        <ClientSessionProvider>
+          {children}
+        </ClientSessionProvider>
       </body>
     </html>
   );
