@@ -20,23 +20,44 @@ async function middleware(req: NextRequestWithAuth) {
     return NextResponse.redirect(new URL("/auth", req.nextUrl.origin));
   }
 
-  const { sdk } = getSdk(req);
-  if (!sdk) return NextResponse.redirect(new URL("/auth", req.nextUrl.origin));
+  // If user is authenticated, check membership for protected routes
+  if (req.nextUrl.pathname.startsWith("/dashboard") || req.nextUrl.pathname === "/") {
+    try {
+      const { sdk } = getSdk(req);
+      if (!sdk) {
+        // If SDK fails, redirect to auth (user needs to re-authenticate)
+        return NextResponse.redirect(new URL("/auth", req.nextUrl.origin));
+      }
 
-  const user = await sdk?.retrieveUsersProfile({});
-  if (!user) return NextResponse.redirect(new URL("/auth", req.nextUrl.origin));
+      const user = await sdk?.retrieveUsersProfile({});
+      if (!user) {
+        // If user profile fails, redirect to auth
+        return NextResponse.redirect(new URL("/auth", req.nextUrl.origin));
+      }
 
-  const membership = await findProduct(sdk, ALLOWED_PRODUCTS);
+      const membership = await findProduct(sdk, ALLOWED_PRODUCTS);
+      
+      if (!membership) {
+        // No valid membership, redirect to purchase
+        return NextResponse.redirect(
+          getPurchaseLink(RECOMMENDED_PLAN, req.nextUrl.pathname, req.nextUrl)
+        );
+      }
 
-  if (membership && req.nextUrl.pathname === "/") {
-    return NextResponse.redirect(new URL("/dashboard", req.nextUrl.origin));
+      // User has valid membership, allow access
+      if (req.nextUrl.pathname === "/") {
+        return NextResponse.redirect(new URL("/dashboard", req.nextUrl.origin));
+      }
+      
+      return NextResponse.next();
+    } catch (error) {
+      console.error("Middleware error:", error);
+      // If there's an error, redirect to auth
+      return NextResponse.redirect(new URL("/auth", req.nextUrl.origin));
+    }
   }
 
-  if (membership) return NextResponse.next();
-
-  return NextResponse.redirect(
-    getPurchaseLink(RECOMMENDED_PLAN, req.nextUrl.pathname, req.nextUrl)
-  );
+  return NextResponse.next();
 }
 
 export default withAuth(middleware, {
