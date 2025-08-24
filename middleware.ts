@@ -15,6 +15,11 @@ async function middleware(req: NextRequestWithAuth) {
     return NextResponse.next();
   }
 
+  // Check if user is authenticated via NextAuth
+  if (!req.nextauth?.token) {
+    return NextResponse.redirect(new URL("/auth", req.nextUrl.origin));
+  }
+
   const { sdk } = getSdk(req);
   if (!sdk) return NextResponse.redirect(new URL("/auth", req.nextUrl.origin));
 
