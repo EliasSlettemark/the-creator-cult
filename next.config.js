@@ -26,6 +26,11 @@ const nextConfig = {
         protocol: "https",
         hostname: "image-useast2a.tiktokv.com",
       },
+      {
+        protocol: "https",
+        hostname: "**",
+        pathname: "/**",
+      }
     ],
   },
 };

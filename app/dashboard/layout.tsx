@@ -41,7 +41,6 @@ import {
 } from "@headlessui/react";
 import { CloseIcon } from "@/icons/close-icon";
 import localFont from "next/font/local";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 const interVariable = localFont({
@@ -68,28 +67,35 @@ const SidebarButton = ({
     </Link>
   );
 };
-
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [windowWidth, setWindowWidth] = useState(0);
-  const { data: session, status } = useSession();
   const router = useRouter();
 
-  console.log("🔍 [DASHBOARD_LAYOUT] Status:", status);
-  console.log("🔍 [DASHBOARD_LAYOUT] Session:", {
-    hasSession: !!session,
-    hasUser: !!session?.user,
-    userId: session?.user?.id
-  });
-
   useEffect(() => {
-    console.log("🔍 [DASHBOARD_LAYOUT] useEffect triggered, status:", status);
-    // Only redirect if session is definitely not available
-    if (status === "unauthenticated") {
-      console.log("❌ [DASHBOARD_LAYOUT] User unauthenticated, redirecting to auth");
-      router.push("/auth");
-    }
-  }, [status, router]);
+    const checkAuth = async () => {
+      try {
+        const response = await fetch("/api/auth/session");
+        const session = await response.json();
+
+        if (!session || !session.user) {
+          router.push("/auth");
+          return;
+        }
+
+        setUser(session.user);
+      } catch (error) {
+        console.error("Error checking auth:", error);
+        router.push("/auth");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, [router]);
 
   useEffect(() => {
     const getWindowWidth = () => {
@@ -103,9 +109,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     return () => window.removeEventListener("resize", getWindowWidth);
   }, []);
 
-  // Show loading while checking authentication
-  if (status === "loading") {
-    console.log("⏳ [DASHBOARD_LAYOUT] Loading session...");
+  if (loading) {
     return (
       <html
         lang="en"
@@ -115,22 +119,13 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         <body>
           <Theme asChild appearance="dark" grayColor="gray" accentColor="blue">
             <div className="w-full h-[100vh] bg-gray-1 flex items-center justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+              <Spinner size="3" />
             </div>
           </Theme>
         </body>
       </html>
     );
   }
-
-  // Don't render dashboard if not authenticated
-  if (status === "unauthenticated" || !session?.user) {
-    console.log("❌ [DASHBOARD_LAYOUT] Not rendering dashboard, status:", status);
-    return null;
-  }
-
-  console.log("✅ [DASHBOARD_LAYOUT] Rendering dashboard for user:", session.user.id);
-  const user = session.user as any; // Type assertion for now to fix immediate errors
 
   return (
     <html
