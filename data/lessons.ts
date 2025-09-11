@@ -41,10 +41,6 @@ export async function getLesson(
   };
 }
 
-export async function getLessonContent(slug: string) {
-  return (await import(`@/data/lessons/${slug}.mdx`)).default;
-}
-
 const lessons = [
   {
     id: "1",

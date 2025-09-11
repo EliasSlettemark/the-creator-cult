@@ -12,7 +12,6 @@ import {
   LinkedInLogoIcon,
   MixerVerticalIcon,
   MobileIcon,
-  // App icons
   NotionLogoIcon,
   ReloadIcon,
   RocketIcon,
@@ -143,9 +142,22 @@ const WhopSVG = () => {
   );
 };
 
+const rank = (
+  currentViews: number
+): { rank: string; requiredViews: number } => {
+  if (currentViews >= 3000000)
+    return { rank: "ALGO HACKER", requiredViews: 3000000 };
+  if (currentViews >= 1000000)
+    return { rank: "SCROLLSTOPPA", requiredViews: 1000000 };
+  if (currentViews >= 250000) return { rank: "HUSTLER", requiredViews: 250000 };
+  if (currentViews >= 50000) return { rank: "NOOB", requiredViews: 50000 };
+  return { rank: "NOOB", requiredViews: 50000 };
+};
+
 export default function Dashboard({ user }: { user: any }) {
   const [accounts, setAccounts] = useState<any[]>([]);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
+
   const getDaysLeftInMonth = () => {
     const now = new Date();
     const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
@@ -164,11 +176,81 @@ export default function Dashboard({ user }: { user: any }) {
     fetchAccounts();
   }, [user?.id]);
 
+  const views =
+    leaderboard && leaderboard.length > 0 ? leaderboard[0].views_this_month : 0;
+  const requiredViews = rank(views).requiredViews;
+  const nextRank = rank(views).rank;
+
+  const progressPercentage = Math.min((views / requiredViews) * 100, 100);
+
   return (
     <div className="space-y-16">
       <div className=" mx-auto max-w-7xl">
         <div className="px-[54px] pr-12 py-7 flex flex-col gap-8">
+          <div className="flex flex-row items-center justify-between">
+            <div>
+              <div className="flex flex-col gap-2">
+                <Heading
+                  size="8"
+                  style={{
+                    fontFeatureSettings: `'liga' 1, 'calt' 1`,
+                  }}
+                >
+                  Welcome, {user?.name}!
+                </Heading>
+                <Text color="gray">Overview of your activity this month</Text>
+              </div>
+            </div>
+          </div>
           <div className="space-y-16">
+            <Card className="w-full" style={{ padding: "0px" }}>
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  height: "100%",
+                  width: `${progressPercentage}%`,
+                  background: "linear-gradient(var(--blue-9), var(--blue-6))",
+                  transition: "width 0.3s ease",
+                  borderRadius: "var(--radius-3)",
+                }}
+              />
+
+              <div
+                style={{
+                  position: "relative",
+                  zIndex: 1,
+                  width: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "var(--space-4)",
+                  minHeight: "80px",
+                }}
+              >
+                <Text
+                  as="div"
+                  style={{ fontWeight: "500", textAlign: "center" }}
+                >
+                  {views.toLocaleString()} / {requiredViews.toLocaleString()}{" "}
+                  views → {nextRank} rank
+                </Text>
+                <Text
+                  as="div"
+                  style={{
+                    fontSize: "0.875rem",
+                    opacity: 0.8,
+                    marginTop: "4px",
+                    textAlign: "center",
+                  }}
+                >
+                  {Math.round(progressPercentage)}% complete
+                </Text>
+              </div>
+            </Card>
+
             <div
               style={{
                 display: "flex",
@@ -218,8 +300,7 @@ export default function Dashboard({ user }: { user: any }) {
                           <div className="flex flex-col gap-2">
                             <Text>Total views</Text>
                             <Text size="8" weight="bold">
-                              {leaderboard &&
-                              leaderboard.length > 0
+                              {leaderboard && leaderboard.length > 0
                                 ? leaderboard[0].views_this_month
                                 : 0}
                             </Text>
@@ -242,8 +323,7 @@ export default function Dashboard({ user }: { user: any }) {
                           <div className="flex flex-col gap-2">
                             <Text>Total views</Text>
                             <Text size="8" weight="bold">
-                              {leaderboard &&
-                                leaderboard.length > 0
+                              {leaderboard && leaderboard.length > 0
                                 ? leaderboard[0].views_this_month
                                 : 0}
                             </Text>
@@ -290,8 +370,7 @@ export default function Dashboard({ user }: { user: any }) {
                       Total likes
                     </Text>
                     <Text as="div" size="6" weight="bold">
-                      {leaderboard &&
-                        leaderboard.length > 0
+                      {leaderboard && leaderboard.length > 0
                         ? leaderboard[0].likes_this_month
                         : 0}
                     </Text>
@@ -311,8 +390,7 @@ export default function Dashboard({ user }: { user: any }) {
                       Videos posted
                     </Text>
                     <Text as="div" size="6" weight="bold">
-                      {leaderboard &&
-                        leaderboard.length > 0
+                      {leaderboard && leaderboard.length > 0
                         ? leaderboard[0].videos_this_month
                         : 0}
                     </Text>
@@ -329,12 +407,12 @@ export default function Dashboard({ user }: { user: any }) {
                 >
                   <div>
                     <Text as="div" color="gray">
-                      Total views
+                      Streak
                     </Text>
-                    <Text as="div" size="6" weight="bold">
-                      {leaderboard &&
-                          leaderboard.length > 0
-                        ? leaderboard[0].views_this_month
+                    <Text as="div" size="6" weight="bold" className="flex items-center gap-2">
+                      <span className="text-2xl">🔥</span>
+                      {leaderboard && leaderboard.length > 0
+                        ? leaderboard[0].videos_this_month
                         : 0}
                     </Text>
                   </div>
@@ -367,14 +445,14 @@ export default function Dashboard({ user }: { user: any }) {
                       <Text size="7" weight="bold">
                         #
                         {leaderboard &&
-                          leaderboard.length > 0 &&
-                          leaderboard[0].latest_video_rank
+                        leaderboard.length > 0 &&
+                        leaderboard[0].latest_video_rank
                           ? leaderboard[0].latest_video_rank
                           : 0}{" "}
                         of{" "}
                         {leaderboard &&
-                          leaderboard.length > 0 &&
-                          leaderboard[0].videos_this_month
+                        leaderboard.length > 0 &&
+                        leaderboard[0].videos_this_month
                           ? leaderboard[0].videos_this_month
                           : 0}
                       </Text>
@@ -385,8 +463,8 @@ export default function Dashboard({ user }: { user: any }) {
                     <div className="flex flex-col gap-2">
                       <Text size="7" weight="bold">
                         {leaderboard &&
-                          leaderboard.length > 0 &&
-                          leaderboard[0].latest_video_views
+                        leaderboard.length > 0 &&
+                        leaderboard[0].latest_video_views
                           ? leaderboard[0].latest_video_views
                           : 0}
                       </Text>
@@ -399,7 +477,7 @@ export default function Dashboard({ user }: { user: any }) {
               </div>
               <div>
                 <Text size="3" weight="medium">
-                  Coaching calls this week
+                  Next coaching call in X days @ Y time
                 </Text>
               </div>
             </div>
@@ -438,7 +516,7 @@ export default function Dashboard({ user }: { user: any }) {
                   window.location.href = url;
                 }}
                 color="gray"
-                className="p-8"
+                className="p-8 cursor-pointer"
               >
                 <PlusIcon width="20" height="20" />
                 <Text>Add account</Text>
