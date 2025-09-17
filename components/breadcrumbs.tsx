@@ -12,14 +12,13 @@ export function Breadcrumbs(props: React.ComponentProps<"nav">) {
   );
 }
 
-export function BreadcrumbHome() {
+export function BreadcrumbHome({ href = "/" }: { href?: string }) {
   return (
-    <Link href="/" className="min-w-0 shrink-0 text-gray-950 dark:text-white">
-      Courses
+    <Link href={href} className="min-w-0 shrink-0 text-gray-950 dark:text-white">
+      Dashboard
     </Link>
   );
 }
-
 export function Breadcrumb({
   href,
   children,

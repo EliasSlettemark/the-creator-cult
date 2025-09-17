@@ -33,11 +33,37 @@ export async function getLesson(
   }
 
   let index = module.lessons.findIndex(({ id }) => id === slug);
+  if (index < module.lessons.length - 1) {
+    return {
+      ...module.lessons[index],
+      module,
+      next: module.lessons[index + 1],
+    };
+  }
+
+  const currentModuleIndex = lessons.findIndex((m) => m.id === module.id);
+  const nextModule = lessons[currentModuleIndex + 1];
+
+  if (nextModule && nextModule.lessons.length > 0) {
+    return {
+      ...module.lessons[index],
+      module,
+      next: nextModule.lessons[0],
+    };
+  }
+
+  if (lessons.length > 0 && lessons[0].lessons.length > 0) {
+    return {
+      ...module.lessons[index],
+      module,
+      next: lessons[0].lessons[0],
+    };
+  }
 
   return {
     ...module.lessons[index],
     module,
-    next: index < module.lessons.length - 1 ? module.lessons[index + 1] : null,
+    next: null,
   };
 }
 
@@ -54,7 +80,7 @@ const lessons = [
           "Health (eating right, sleeping right, porn, phone addiction (opal), habits)",
         description: "Description",
         video: {
-          duration: 600,
+          duration: 786,
           thumbnail:
             "https://assets.tailwindcss.com/templates/compass/lesson-video-thumbnail-01.png",
           url: "https://pub-55c34eb2fdb84a70baa25d5ab7a671a4.r2.dev/Mindset%20and%20Health%20Strategies%20.mp4",
@@ -65,7 +91,7 @@ const lessons = [
         title: "Self-Belief/Visualization",
         description: "Description",
         video: {
-          duration: 600,
+          duration: 741,
           url: "https://pub-55c34eb2fdb84a70baa25d5ab7a671a4.r2.dev/Self%20Belief%20%26%20Visualization.mp4",
         },
       },
@@ -74,7 +100,7 @@ const lessons = [
         title: "Tai Lopez 3-Step Framework",
         description: "Description",
         video: {
-          duration: 600,
+          duration: 500,
           url: "https://pub-55c34eb2fdb84a70baa25d5ab7a671a4.r2.dev/3-Step%20Framework.mp4",
         },
       },
@@ -83,7 +109,7 @@ const lessons = [
         title: "Complete Self-Accountability",
         description: "Description",
         video: {
-          duration: 600,
+          duration: 611,
           url: "https://pub-55c34eb2fdb84a70baa25d5ab7a671a4.r2.dev/Self%20Accountability.mp4",
         },
       },
@@ -100,7 +126,7 @@ const lessons = [
         title: "Welcome",
         description: "Description",
         video: {
-          duration: 600,
+          duration: 67,
           url: "https://pub-55c34eb2fdb84a70baa25d5ab7a671a4.r2.dev/Intro%20-%201.mp4",
         },
       },
@@ -138,7 +164,7 @@ const lessons = [
         title: "Going Live",
         description: "Description",
         video: {
-          duration: 600,
+          duration: 607,
           url: "https://pub-55c34eb2fdb84a70baa25d5ab7a671a4.r2.dev/How%20to%20Go%20Live.mp4",
         },
       },
@@ -166,7 +192,7 @@ const lessons = [
         title: "What Is The TT Shop Affiliate Program",
         description: "Description",
         video: {
-          duration: 600,
+          duration: 515,
           url: "https://pub-55c34eb2fdb84a70baa25d5ab7a671a4.r2.dev/What%20is%20TikTok%20Shop.mp4",
         },
       },
@@ -175,7 +201,7 @@ const lessons = [
         title: "How To Access From Anywhere In The World",
         description: "Description",
         video: {
-          duration: 600,
+          duration: 341,
           url: "https://pub-55c34eb2fdb84a70baa25d5ab7a671a4.r2.dev/The%20Loophole%20Method.mp4",
         },
       },
@@ -184,7 +210,7 @@ const lessons = [
         title: "Getting An Account",
         description: "Description",
         video: {
-          duration: 600,
+          duration: 79,
           url: "https://pub-55c34eb2fdb84a70baa25d5ab7a671a4.r2.dev/How%20to%20get%20an%20account.mp4",
         },
       },
@@ -193,7 +219,7 @@ const lessons = [
         title: "How To Get To 5k Followers FAST",
         description: "Description",
         video: {
-          duration: 600,
+          duration: 296,
           url: "https://pub-55c34eb2fdb84a70baa25d5ab7a671a4.r2.dev/How%20To%20Get%20To%205k%20Followers%20FAST.mp4",
         },
       },
@@ -202,7 +228,7 @@ const lessons = [
         title: "Account Warming",
         description: "Description",
         video: {
-          duration: 600,
+          duration: 197,
           url: "https://pub-55c34eb2fdb84a70baa25d5ab7a671a4.r2.dev/Account%20Warming.mp4",
         },
       },
@@ -212,7 +238,7 @@ const lessons = [
           "How To Find Winning Products Everytime (Product Research) + (Winning Product Criteria)",
         description: "Description",
         video: {
-          duration: 600,
+          duration: 433,
           url: "https://pub-55c34eb2fdb84a70baa25d5ab7a671a4.r2.dev/Finding%20Winning%20Products_%20Proven%20Methods%20for%20Success!%20.mp4",
         },
       },
@@ -221,7 +247,7 @@ const lessons = [
         title: "How To Create Viral Videos That ACTUALLY Sell",
         description: "Description",
         video: {
-          duration: 600,
+          duration: 266,
           url: "https://pub-55c34eb2fdb84a70baa25d5ab7a671a4.r2.dev/Creating%20Viral%20Videos%20That%20Sell_%20Tips%20for%20Success!%20.mp4",
         },
       },
@@ -230,7 +256,7 @@ const lessons = [
         title: "What NOT To Do",
         description: "Description",
         video: {
-          duration: 600,
+          duration: 235,
           url: "https://pub-55c34eb2fdb84a70baa25d5ab7a671a4.r2.dev/What%20NOT%20To%20Do.mp4",
         },
       },
@@ -239,7 +265,7 @@ const lessons = [
         title: "Getting Paid/LCC",
         description: "Description",
         video: {
-          duration: 600,
+          duration: 169,
           url: "https://pub-55c34eb2fdb84a70baa25d5ab7a671a4.r2.dev/Getting%20Paid.mp4",
         },
       },
@@ -248,7 +274,7 @@ const lessons = [
         title: "Viral Video Checklist",
         description: "Description",
         video: {
-          duration: 600,
+          duration: 344,
           url: "https://pub-55c34eb2fdb84a70baa25d5ab7a671a4.r2.dev/Viral%20Video%20Checklist.mp4",
         },
       },
@@ -257,7 +283,7 @@ const lessons = [
         title: "Gameify TikTok Shop",
         description: "Description",
         video: {
-          duration: 600,
+          duration: 227,
           url: "https://pub-55c34eb2fdb84a70baa25d5ab7a671a4.r2.dev/Gameify%20TikTok%20Shop.mp4",
         },
       },
@@ -281,7 +307,7 @@ const lessons = [
         title: "How To Make Money FACELESS",
         description: "Description",
         video: {
-          duration: 600,
+          duration: 291,
           url: "https://pub-55c34eb2fdb84a70baa25d5ab7a671a4.r2.dev/Faceless%20TikTok%20Shop.mp4",
         },
       },
@@ -290,7 +316,7 @@ const lessons = [
         title: "ChatGPT To Riches",
         description: "Description",
         video: {
-          duration: 600,
+          duration: 327,
           url: "https://pub-55c34eb2fdb84a70baa25d5ab7a671a4.r2.dev/ChatGPT%20To%20Riches.mp4",
         },
       },
@@ -299,7 +325,7 @@ const lessons = [
         title: "Psychology 101 (Viral Hacking)",
         description: "Description",
         video: {
-          duration: 600,
+          duration: 598,
           url: "https://pub-55c34eb2fdb84a70baa25d5ab7a671a4.r2.dev/Psychology%20101.mp4",
         },
       },
@@ -308,7 +334,7 @@ const lessons = [
         title: "How To AVOID Violations",
         description: "Description",
         video: {
-          duration: 600,
+          duration: 283,
           url: "https://pub-55c34eb2fdb84a70baa25d5ab7a671a4.r2.dev/Avoiding%20Violations_%20Tips%20to%20Keep%20Your%20Account%20Safe%20.mp4",
         },
       },
@@ -317,7 +343,7 @@ const lessons = [
         title: "How To Capitalize On Trends/Relate Anything To Anything",
         description: "Description",
         video: {
-          duration: 600,
+          duration: 308,
           url: "https://pub-55c34eb2fdb84a70baa25d5ab7a671a4.r2.dev/How%20To%20Capitalize%20On%20Trends.mp4",
         },
       },
@@ -338,7 +364,7 @@ const lessons = [
         title: "The Golden Formula (video structure of most viral videos)",
         description: "Description",
         video: {
-          duration: 600,
+          duration: 916,
           url: "https://pub-55c34eb2fdb84a70baa25d5ab7a671a4.r2.dev/The%20Golden%20Formula.mp4",
         },
       },
@@ -348,7 +374,7 @@ const lessons = [
           "SEO Mastery (dragging off screen, word choice, hashtag selection, creator search insights)",
         description: "Description",
         video: {
-          duration: 600,
+          duration: 472,
           url: "https://pub-55c34eb2fdb84a70baa25d5ab7a671a4.r2.dev/SEO%20Mastery.mp4",
         },
       },
@@ -358,7 +384,7 @@ const lessons = [
           "Becoming The Viewer (talk abt target audience, tapping into energy)",
         description: "Description",
         video: {
-          duration: 600,
+          duration: 340,
           url: "https://pub-55c34eb2fdb84a70baa25d5ab7a671a4.r2.dev/Becoming%20The%20Viewer.mp4",
         },
       },
@@ -375,7 +401,7 @@ const lessons = [
         title: "Posting Schedule (KPIs)",
         description: "Description",
         video: {
-          duration: 600,
+          duration: 381,
           url: "https://pub-55c34eb2fdb84a70baa25d5ab7a671a4.r2.dev/Power%20of%20KPI_s.mp4",
         },
       },
@@ -385,7 +411,7 @@ const lessons = [
           "Creating Top Tier Videos (LIVE RECORDING for regular vids, story, conspiracy)",
         description: "Description",
         video: {
-          duration: 600,
+          duration: 466,
           url: "https://pub-55c34eb2fdb84a70baa25d5ab7a671a4.r2.dev/Creating%20Viral%20Videos%20That%20Sell_%20Tips%20for%20Success!%20.mp4",
         },
       },
@@ -394,7 +420,7 @@ const lessons = [
         title: "Why You Are Getting No Sales",
         description: "Description",
         video: {
-          duration: 600,
+          duration: 148,
           url: "https://pub-55c34eb2fdb84a70baa25d5ab7a671a4.r2.dev/Why%20You%20Are%20Getting%20No%20Sales.mp4",
         },
       },
@@ -403,7 +429,7 @@ const lessons = [
         title: "Cashing Out Like A G (LLC Formation)",
         description: "Description",
         video: {
-          duration: 600,
+          duration: 400,
           url: "https://pub-55c34eb2fdb84a70baa25d5ab7a671a4.r2.dev/Cashing%20Out%20Like%20A%20G%20(LLC).mp4",
         },
       },
@@ -412,7 +438,7 @@ const lessons = [
         title: "Exposing The Algorithm",
         description: "Description",
         video: {
-          duration: 600,
+          duration: 427,
           url: "https://pub-55c34eb2fdb84a70baa25d5ab7a671a4.r2.dev/Exposing%20the%20Secrets%20of%20the%20TikTok%20Algorithm.mp4",
         },
       },
@@ -421,7 +447,7 @@ const lessons = [
         title: "Stealing Like An Artist",
         description: "Description",
         video: {
-          duration: 600,
+          duration: 214,
           url: "https://pub-55c34eb2fdb84a70baa25d5ab7a671a4.r2.dev/Stealing%20Like%20An%20Artist.mp4",
         },
       },
@@ -430,7 +456,7 @@ const lessons = [
         title: "How To Make Money (Even If TikTok Gets Banned)",
         description: "Description",
         video: {
-          duration: 600,
+          duration: 534,
           url: "https://pub-55c34eb2fdb84a70baa25d5ab7a671a4.r2.dev/Making%20Money%20if%20Tiktok%20gets%20Banned.mp4",
         },
       },

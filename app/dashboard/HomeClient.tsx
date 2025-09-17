@@ -300,8 +300,13 @@ export default function Dashboard({ user }: { user: any }) {
                           <div className="flex flex-col gap-2">
                             <Text>Total views</Text>
                             <Text size="8" weight="bold">
+                              #
                               {leaderboard && leaderboard.length > 0
-                                ? leaderboard[0].views_this_month
+                                ? leaderboard[0].rank
+                                : 0}{" "}
+                              of{" "}
+                              {leaderboard && leaderboard.length > 0
+                                ? leaderboard.length
                                 : 0}
                             </Text>
                           </div>
@@ -321,10 +326,10 @@ export default function Dashboard({ user }: { user: any }) {
                         </Text>
                         <Card className="h-full">
                           <div className="flex flex-col gap-2">
-                            <Text>Total views</Text>
+                            <Text>Videos posted</Text>
                             <Text size="8" weight="bold">
                               {leaderboard && leaderboard.length > 0
-                                ? leaderboard[0].views_this_month
+                                ? leaderboard[0].videos_this_month
                                 : 0}
                             </Text>
                           </div>
@@ -409,10 +414,15 @@ export default function Dashboard({ user }: { user: any }) {
                     <Text as="div" color="gray">
                       Streak
                     </Text>
-                    <Text as="div" size="6" weight="bold" className="flex items-center gap-2">
+                    <Text
+                      as="div"
+                      size="6"
+                      weight="bold"
+                      className="flex items-center gap-2"
+                    >
                       <span className="text-2xl">🔥</span>
                       {leaderboard && leaderboard.length > 0
-                        ? leaderboard[0].videos_this_month
+                        ? leaderboard[0].streak
                         : 0}
                     </Text>
                   </div>

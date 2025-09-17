@@ -218,6 +218,53 @@ const Leaderboard = async () => {
             </div>
           </div>
 
+          <Card className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 border-blue-200 dark:border-blue-800">
+            <div className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-2">
+                  <Heading
+                    size="5"
+                    className="text-blue-600 dark:text-blue-400"
+                  >
+                    🏆 Season Rewards
+                  </Heading>
+                  <Text size="3" className="text-gray-700 dark:text-gray-300">
+                    Top 3 creators win $100 + Custom LED
+                  </Text>
+                  <Text size="2" color="gray">
+                    Compete for exclusive prizes every season
+                  </Text>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2 text-right">
+                    <Text
+                      size="4"
+                      weight="bold"
+                      className="text-green-600 dark:text-green-400"
+                    >
+                      $100
+                    </Text>
+                    <Text size="2" color="gray">
+                      Cash Prize
+                    </Text>
+                  </div>
+                  <div className="flex items-center gap-2 text-right">
+                    <Text
+                      size="4"
+                      weight="bold"
+                      className="text-purple-600 dark:text-purple-400"
+                    >
+                      LED
+                    </Text>
+                    <Text size="2" color="gray">
+                      Custom Display
+                    </Text>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
+
           <Card>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 p-4">
@@ -281,6 +328,99 @@ const Leaderboard = async () => {
           </Card>
 
           <Countdown />
+
+          {typeof leaderboardIndex === "number" &&
+            leaderboardIndex >= 0 &&
+            leaderboardData && (
+              <Card className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950/20 dark:to-blue-950/20 border-green-200 dark:border-green-800">
+                <div className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-2">
+                      <Heading
+                        size="5"
+                        className="text-green-600 dark:text-green-400"
+                      >
+                        📈 Your Progress
+                      </Heading>
+                      <Text
+                        size="3"
+                        className="text-gray-700 dark:text-gray-300"
+                      >
+                        You're currently ranked{" "}
+                        <span className="font-semibold text-green-600 dark:text-green-400">
+                          #{leaderboardIndex + 1}
+                        </span>
+                        {leaderboardIndex > 0 ? (
+                          <>
+                            {" "}
+                            and are{" "}
+                            <span className="font-semibold text-blue-600 dark:text-blue-400">
+                              {(
+                                leaderboardData[leaderboardIndex - 1]
+                                  .views_this_month -
+                                (leaderboard?.views_this_month || 0)
+                              ).toLocaleString()}
+                            </span>{" "}
+                            views from passing{" "}
+                            <span className="font-semibold text-purple-600 dark:text-purple-400">
+                              {leaderboardData[leaderboardIndex - 1].username ||
+                                "the creator above you"}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="font-semibold text-yellow-600 dark:text-yellow-400">
+                            🥇 You're #1! Keep it up!
+                          </span>
+                        )}
+                      </Text>
+                      {leaderboardIndex > 0 && (
+                        <Text size="2" color="gray">
+                          Next milestone: Reach{" "}
+                          <span className="font-medium">
+                            {leaderboardData[
+                              leaderboardIndex - 1
+                            ].views_this_month?.toLocaleString() || "0"}
+                          </span>{" "}
+                          views to move up to #{leaderboardIndex}
+                        </Text>
+                      )}
+                    </div>
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="text-center">
+                        <Text
+                          size="6"
+                          weight="bold"
+                          className="text-green-600 dark:text-green-400"
+                        >
+                          #{leaderboardIndex + 1}
+                        </Text>
+                        <Text size="2" color="gray">
+                          Current Rank
+                        </Text>
+                      </div>
+                      {leaderboardIndex > 0 && (
+                        <div className="text-center">
+                          <Text
+                            size="4"
+                            weight="bold"
+                            className="text-blue-600 dark:text-blue-400"
+                          >
+                            {(
+                              leaderboardData[leaderboardIndex - 1]
+                                .views_this_month -
+                              (leaderboard?.views_this_month || 0)
+                            ).toLocaleString()}
+                          </Text>
+                          <Text size="2" color="gray">
+                            Views to Pass
+                          </Text>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            )}
 
           <div className="grid grid-cols-2  lg:grid-cols-5 gap-4">
             {[
