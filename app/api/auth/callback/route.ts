@@ -3,11 +3,8 @@ import { NextResponse } from "next/server";
 import axios from "axios";
 import { createClient } from "@supabase/supabase-js";
 import querystring from "querystring";
-import getSdk from "@/lib/get-user-sdk/app";
 
 export async function GET(request: Request) {
-  const { sdk } = await getSdk();
-
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
 
@@ -20,15 +17,11 @@ export async function GET(request: Request) {
     process.env.SUPABASE_ANON_KEY as string
   );
 
-  if (!sdk) {
-    return NextResponse.json({ error: "SDK not found" }, { status: 404 });
-  }
-
-  const user = await sdk?.retrieveUsersProfile({});
-
-  if (!user) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
-  }
+  const user = {
+    id: "demo-user",
+    username: "User",
+    profile_pic_url: null,
+  } as any;
 
   try {
     const decode = decodeURI(code);
@@ -69,7 +62,7 @@ export async function GET(request: Request) {
 
     const { data, error } = await supabase.from("accounts").insert({
       user_id: user.id,
-      username: user.username, 
+      username: user.username,
       profile_pic_url: user.profile_pic_url,
       display_name: display_name,
       avatar_url: avatar_url,
@@ -83,7 +76,7 @@ export async function GET(request: Request) {
 
     return NextResponse.redirect(new URL("/dashboard", request.url));
   } catch (error: any) {
-    console.log(error.response.data.error);
+    console.log(error.response?.data?.error || error.message);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

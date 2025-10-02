@@ -19,7 +19,6 @@ import {
   DropdownMenu,
   IconButton,
   Link,
-  Spinner,
   Text,
   TextArea,
   Theme,
@@ -37,7 +36,7 @@ import {
 } from "@headlessui/react";
 import { CloseIcon } from "@/icons/close-icon";
 import localFont from "next/font/local";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const interVariable = localFont({
   src: "../../fonts/InterVariable.woff2",
@@ -76,29 +75,37 @@ const DashboardLayout = ({
   const [loading, setLoading] = useState(true);
   const [windowWidth, setWindowWidth] = useState(0);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const demoToken = process.env.NEXT_PUBLIC_DEMO_TOKEN || "demo-creator-cult";
+
+  const isDemoClient = () => {
+    if (!demoToken) return false;
+    try {
+      const cookieMatch = document.cookie
+        .split(";")
+        .map((c) => c.trim())
+        .find((c) => c.startsWith("demo="));
+      const cookieVal = cookieMatch?.split("=")[1];
+      if (cookieVal && cookieVal === demoToken) return true;
+    } catch {}
+    const qp = searchParams?.get("demo");
+    return qp === demoToken;
+  };
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch("/api/auth/session");
-        const session = await response.json();
-
-        if (!session || !session.user) {
-          router.push("/auth");
-          return;
-        }
-
-        setUser(session.user);
+        setUser({ id: "demo-user", name: "User" });
       } catch (error) {
         console.error("Error checking auth:", error);
-        router.push("/auth");
       } finally {
         setLoading(false);
       }
     };
 
     checkAuth();
-  }, [router]);
+  }, [router, searchParams]);
 
   useEffect(() => {
     const getWindowWidth = () => {
@@ -122,7 +129,7 @@ const DashboardLayout = ({
         <body>
           <Theme asChild appearance="dark" grayColor="gray" accentColor="blue">
             <div className="w-full h-[100vh] bg-gray-1 flex items-center justify-center">
-              <Spinner size="3" />
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/20 border-t-white" />
             </div>
           </Theme>
         </body>

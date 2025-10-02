@@ -1,7 +1,5 @@
-import { WhopSDK } from "@whop-sdk/core";
-import { unstable_getServerSession } from "next-auth";
 import { cache } from "react";
-import { authOptions } from "../auth";
+import { cookies } from "next/headers";
 
 /**
  * gets the UserService from the WhopSDK from the session
@@ -10,12 +8,14 @@ import { authOptions } from "../auth";
  * on it can be properly cached too
  */
 const getSdk = cache(async () => {
-  const session = await unstable_getServerSession(authOptions);
-  if (!session) return {};
   return {
-    sdk: new WhopSDK({ TOKEN: session.accessToken }).userOAuth,
-    user: session.user,
-  };
+    user: {
+      id: "demo-user",
+      name: "User",
+      email: "demo@example.com",
+      image: null,
+    } as any,
+  } as any;
 });
 
 export default getSdk;
