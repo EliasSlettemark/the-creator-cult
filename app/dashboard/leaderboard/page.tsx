@@ -5,7 +5,6 @@ import {
   GitHubLogoIcon,
   LinkedInLogoIcon,
   MixerVerticalIcon,
-  // App icons
   NotionLogoIcon,
 } from "@radix-ui/react-icons";
 import {
@@ -155,11 +154,7 @@ const WhopSVG = () => {
 };
 
 const Leaderboard = async () => {
-  const { sdk } = await getSdk();
-
-  if (!sdk) {
-    return null;
-  }
+  const { user } = await getSdk();
 
   // Function to determine user rank based on monthly views
   const getUserRank = (views: number): string => {
@@ -189,13 +184,11 @@ const Leaderboard = async () => {
     );
   }
 
-  const userProfile = await sdk.retrieveUsersProfile({});
-
   const leaderboard = leaderboardData?.find(
-    (item) => item.user_id === userProfile.id
+    (item) => item.user_id === user?.id
   );
   const leaderboardIndex = leaderboardData?.findIndex(
-    (item) => item.user_id === userProfile.id
+    (item) => item.user_id === user?.id
   );
 
   return (
@@ -270,8 +263,8 @@ const Leaderboard = async () => {
               <div className="flex items-center gap-2 p-4">
                 <Avatar
                   className="w-20 h-20"
-                  src={userProfile.profile_pic_url}
-                  fallback={userProfile.username?.charAt(0) || "U"}
+                  src={leaderboard?.profile_pic_url || null}
+                  fallback={leaderboard?.username?.charAt(0) || user?.name?.charAt(0) || "U"}
                 />
                 <div className="flex flex-col">
                   <p className="text-gray-a11 text-lg">You are</p>

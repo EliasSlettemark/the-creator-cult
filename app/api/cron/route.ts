@@ -153,6 +153,8 @@ export async function GET() {
           users[userId].profile_pic_url = account.profile_pic_url || account.avatar_url || "";
         }
 
+        console.log(`Processing account ${account.id} for user ${userId}`);
+
         const followerResponse = await axios.get(
           "https://open.tiktokapis.com/v2/user/info/?fields=follower_count",
           {
@@ -162,6 +164,8 @@ export async function GET() {
             },
           }
         );
+
+        console.log(`Successfully fetched follower data for account ${account.id}`);
 
         const followerCount = followerResponse.data?.data?.follower_count || 0;
 
@@ -173,6 +177,8 @@ export async function GET() {
         let cursor = 0;
         let hasMore = true;
         let videos: any[] = [];
+
+        console.log(`Fetching videos for account ${account.id}...`);
 
         while (hasMore) {
           const response = await axios.post(
@@ -199,6 +205,8 @@ export async function GET() {
           }
         }
 
+        console.log(`Fetched ${videos.length} videos for account ${account.id}`);
+
         users[userId].videos = [...users[userId].videos, ...videos];
         users[userId].followers += followerCount;
 
@@ -216,28 +224,40 @@ export async function GET() {
             }
           }
         }
-      } catch (error) {
-        console.log(`Error processing account ${account.id}:`, error);
+      } catch (error: any) {
+        console.error(`Error processing account ${account.id}:`, {
+          accountId: account.id,
+          userId: userId,
+          errorMessage: error.message,
+          errorCode: error.code,
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          responseData: error.response?.data,
+          accessTokenExpiry: (account as any).access_token_expires_at,
+          refreshTokenExpiry: (account as any).refresh_token_expires_at,
+        });
+        
+        // If 401, token is likely expired - skip this account
+        if (error.response?.status === 401) {
+          console.warn(`Account ${account.id} has expired token. Skipping. Consider refreshing tokens.`);
+        }
       }
     }
 
     users[userId].streak = calculatePostingStreak(users[userId].videos);
   }
 
+  console.log('Processing users for leaderboard:', Object.keys(users).map(uid => ({
+    userId: uid,
+    videoCount: users[uid].videos.length,
+    viewsThisMonth: users[uid].views_this_month,
+    followers: users[uid].followers,
+  })));
+
   for (const [userId, userData] of Object.entries(users)) {
-    if (userData.videos.length === 0) continue;
-
-    const latestVideo = userData.videos.reduce((a: any, b: any) =>
-      a.create_time > b.create_time ? a : b
-    );
+    console.log(`Processing leaderboard entry for user ${userId}, videos: ${userData.videos.length}`);
     
-    const sortedByViews = [...userData.videos].sort(
-      (a, b) => b.view_count - a.view_count
-    );
-    const latestVideoRank =
-      sortedByViews.findIndex((v) => v.id === latestVideo.id) + 1;
-
-    const upsertData = {
+    let upsertData: any = {
       user_id: userId,
       streak: userData.streak,
       username: userData.name,
@@ -247,19 +267,53 @@ export async function GET() {
       videos_this_month: userData.videos_this_month,
       likes_this_month: userData.likes_this_month,
       followers: userData.followers,
-      latest_video_id: latestVideo.id,
-      latest_video_views: latestVideo.view_count,
-      latest_video_rank: latestVideoRank,
-      latest_video_cover: latestVideo.cover_image_url,
-      latest_video_title: latestVideo.title,
     };
+
+    if (userData.videos.length === 0) {
+      console.warn(`User ${userId} has no videos - adding to leaderboard with null video data`);
+      // Add null values for video fields
+      upsertData.latest_video_id = null;
+      upsertData.latest_video_views = null;
+      upsertData.latest_video_rank = null;
+      upsertData.latest_video_cover = null;
+      upsertData.latest_video_title = null;
+    } else {
+      const latestVideo = userData.videos.reduce((a: any, b: any) =>
+        a.create_time > b.create_time ? a : b
+      );
+      
+      const sortedByViews = [...userData.videos].sort(
+        (a, b) => b.view_count - a.view_count
+      );
+      const latestVideoRank =
+        sortedByViews.findIndex((v) => v.id === latestVideo.id) + 1;
+
+      upsertData.latest_video_id = latestVideo.id;
+      upsertData.latest_video_views = latestVideo.view_count;
+      upsertData.latest_video_rank = latestVideoRank;
+      upsertData.latest_video_cover = latestVideo.cover_image_url;
+      upsertData.latest_video_title = latestVideo.title;
+    }
+
+    console.log(`Upserting leaderboard data for user ${userId}:`, upsertData);
 
     const { data, error } = await supabase
       .from("leaderboard")
       .upsert(upsertData, { onConflict: "user_id" });
+
+    if (error) {
+      console.error(`Failed to upsert leaderboard for user ${userId}:`, error);
+    } else {
+      console.log(`Successfully upserted leaderboard for user ${userId}`);
+    }
   }
 
+  console.log('Updating ranks...');
+  
   const { data: leaderboard } = await supabase.from("leaderboard").select("*");
+  
+  console.log(`Found ${leaderboard?.length || 0} leaderboard entries`);
+  
   if (leaderboard) {
     leaderboard.sort((a, b) => b.views_this_week - a.views_this_week);
     for (let i = 0; i < leaderboard.length; i++) {
@@ -275,7 +329,9 @@ export async function GET() {
         .update({ rank_this_month: i + 1 })
         .eq("user_id", leaderboard[i].user_id);
     }
+    console.log('Ranks updated successfully');
   }
 
-  return NextResponse.json({ success: true });
+  console.log('Cron job completed successfully');
+  return NextResponse.json({ success: true, processedUsers: Object.keys(users).length });
 }
