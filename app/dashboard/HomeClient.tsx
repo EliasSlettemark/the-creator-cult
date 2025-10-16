@@ -436,7 +436,7 @@ export default function Dashboard({ user }: { user: any }) {
                   Your Latest Video
                 </Text>
                 <div className="flex gap-4">
-                  {leaderboard && leaderboard.length > 0 && (
+                  {leaderboard && leaderboard.length > 0 && leaderboard[0].latest_video_cover && (
                     <Image
                       src={leaderboard[0].latest_video_cover}
                       alt="Latest video cover"
@@ -499,7 +499,7 @@ export default function Dashboard({ user }: { user: any }) {
                   <Card key={account.id}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Avatar src={account.avatar_url} fallback="PB" />
+                        <Avatar src={account.avatar_url || undefined} fallback="PB" />
                         <Text>{account.display_name}</Text>
                       </div>
                       <Button

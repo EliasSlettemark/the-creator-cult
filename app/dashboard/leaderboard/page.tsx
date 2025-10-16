@@ -263,7 +263,7 @@ const Leaderboard = async () => {
               <div className="flex items-center gap-2 p-4">
                 <Avatar
                   className="w-20 h-20"
-                  src={leaderboard?.profile_pic_url || null}
+                  src={leaderboard?.profile_pic_url || undefined}
                   fallback={leaderboard?.username?.charAt(0) || user?.name?.charAt(0) || "U"}
                 />
                 <div className="flex flex-col">
@@ -508,7 +508,7 @@ const Leaderboard = async () => {
                     <div className="flex-1">
                       <div className="flex items-center gap-3">
                         <Avatar
-                          src={entry.profile_pic_url}
+                          src={entry.profile_pic_url || undefined}
                           fallback={entry.username?.charAt(0) || "U"}
                           size="2"
                         />
