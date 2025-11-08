@@ -507,9 +507,9 @@ export default function Dashboard({ user }: { user: any }) {
                           await fetch(`/api/accounts?id=${account.id}`, {
                             method: "DELETE",
                           });
-                          setAccounts(
-                            accounts.filter(
-                              (account) => account.id !== account.id
+                          setAccounts((prevAccounts) =>
+                            prevAccounts.filter(
+                              (existingAccount) => existingAccount.id !== account.id
                             )
                           );
                         }}

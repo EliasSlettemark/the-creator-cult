@@ -3,7 +3,6 @@
 import {
   BookmarkIcon,
   CalendarIcon,
-  ChevronDownIcon,
   FileTextIcon,
   HamburgerMenuIcon,
   VideoIcon,
@@ -196,7 +195,6 @@ const DashboardLayout = ({
                                       />
                                       <Text>{user?.name || "User"}</Text>
                                     </div>
-                                    <ChevronDownIcon />
                                   </div>
                                 </button>
                               </Card>
@@ -247,7 +245,6 @@ const DashboardLayout = ({
                                 />
                                 <Text>{user?.name || "User"}</Text>
                               </div>
-                              <ChevronDownIcon />
                             </div>
                           </button>
                         </Card>
@@ -318,7 +315,33 @@ const DashboardLayout = ({
                       : "w-[calc(100vw-12px)]"
                   }
                 >
-                  {children}
+                  <div className="flex min-h-[calc(100vh-64px)] flex-col">
+                    <div className="flex-1">{children}</div>
+                    <footer className="flex flex-col gap-2 border-t border-white/10 px-6 py-4 text-xs text-gray-a9 sm:flex-row sm:items-center sm:justify-between">
+                      <Text size="2" color="gray">
+                        © {new Date().getFullYear()} The Creator Cult. All rights
+                        reserved.
+                      </Text>
+                      <div className="flex flex-wrap items-center gap-4">
+                        <a
+                          href="https://www.thecreatorcult.io/tos.pdf"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-9 hover:underline"
+                        >
+                          Terms of Service
+                        </a>
+                        <a
+                          href="https://www.thecreatorcult.io/privacy-policy.pdf"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-9 hover:underline"
+                        >
+                          Privacy Policy
+                        </a>
+                      </div>
+                    </footer>
+                  </div>
                 </main>
               </div>
             </div>

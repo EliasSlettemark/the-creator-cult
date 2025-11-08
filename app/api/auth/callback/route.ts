@@ -1,15 +1,53 @@
 // http://localhost:3000/api/auth/callback/tiktok?code=tj9R91EhtezcGDEJ5_mrzDIE_XAIKDPdU3velowZJg55Vnn8O9CqFr-4EIJuy8v3ub1wVzPY1qRR6zW-o7K3fz6I9SsLB1-d3D6KL3AnPGP0tfb5OVGeqN7O6XGdDixuxMov2aOeP70DbI5ALlfW3YqziGz0RiynIxi5PXoaND5WmYUF83sI59rnhBskdNza*0%215691.e1&scopes=user.info.basic%2Cvideo.publish%2Cvideo.upload%2Cvideo.list
-import { NextResponse } from "next/server";
 import axios from "axios";
+import { NextResponse, NextRequest } from "next/server";
+import { cookies } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
 import querystring from "querystring";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
+  const state = searchParams.get("state");
+
+  const storedState = cookies().get("csrfState")?.value;
+  cookies().delete("csrfState");
+
+  if (!state || !storedState || state !== storedState) {
+    return NextResponse.redirect(
+      new URL("/auth?error=state_mismatch", request.url)
+    );
+  }
 
   if (!code) {
-    return NextResponse.json({ error: "Code not found" }, { status: 404 });
+    return NextResponse.redirect(new URL("/auth?error=missing_code", request.url));
+  }
+
+  const session = await getServerSession(authOptions);
+
+  const sessionUser = session?.user as
+    | {
+        id: string;
+        name?: string | null;
+        email?: string | null;
+        image?: string | null;
+      }
+    | undefined;
+
+  if (!sessionUser?.id) {
+    return NextResponse.redirect(new URL("/auth?error=unauthenticated", request.url));
+  }
+
+  const clientKey = process.env.TIKTOK_CLIENT_KEY;
+  const clientSecret = process.env.TIKTOK_CLIENT_SECRET;
+  const redirectUri = process.env.TIKTOK_REDIRECT_URI;
+
+  if (!clientKey || !clientSecret || !redirectUri) {
+    return NextResponse.redirect(
+      new URL("/auth?error=oauth_not_configured", request.url)
+    );
   }
 
   const supabase = createClient(
@@ -17,21 +55,15 @@ export async function GET(request: Request) {
     process.env.SUPABASE_ANON_KEY as string
   );
 
-  const user = {
-    id: "demo-user",
-    username: "User",
-    profile_pic_url: null,
-  } as any;
-
   try {
-    const decode = decodeURI(code);
     const params = {
-      client_key: process.env.TIKTOK_CLIENT_KEY,
-      client_secret: process.env.TIKTOK_CLIENT_SECRET,
-      code: decode,
+      client_key: clientKey,
+      client_secret: clientSecret,
+      code: decodeURIComponent(code),
       grant_type: "authorization_code",
-      redirect_uri: process.env.TIKTOK_REDIRECT_URI,
+      redirect_uri: redirectUri,
     };
+
     const {
       data: { access_token, expires_in, refresh_token, refresh_expires_in },
     } = await axios.post(
@@ -60,12 +92,12 @@ export async function GET(request: Request) {
       }
     );
 
-    const { data, error } = await supabase.from("accounts").insert({
-      user_id: user.id,
-      username: user.username,
-      profile_pic_url: user.profile_pic_url,
-      display_name: display_name,
-      avatar_url: avatar_url,
+    const { error } = await supabase.from("accounts").insert({
+      user_id: sessionUser.id,
+      username: sessionUser.name ?? sessionUser.email ?? "Creator",
+      profile_pic_url: sessionUser.image,
+      display_name,
+      avatar_url,
       access_token,
       refresh_token,
       access_token_expires_at: new Date(Date.now() + expires_in * 1000),
@@ -74,12 +106,13 @@ export async function GET(request: Request) {
       ),
     });
 
+    if (error) {
+      throw new Error(error.message);
+    }
+
     return NextResponse.redirect(new URL("/dashboard", request.url));
   } catch (error: any) {
-    console.log(error.response?.data?.error || error.message);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    console.error(error.response?.data?.error || error.message);
+    return NextResponse.redirect(new URL("/auth?error=tiktok_oauth", request.url));
   }
 }

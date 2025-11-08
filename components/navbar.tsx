@@ -7,7 +7,6 @@ import {
   DropdownMenu,
 } from "@/components/dropdown";
 import { IconButton } from "@/components/icon-button";
-import { ChevronDownIcon } from "@/icons/chevron-down-icon";
 import { CloseIcon } from "@/icons/close-icon";
 import { MenuIcon } from "@/icons/menu-icon";
 import {
@@ -110,9 +109,8 @@ function SiteNavigation() {
         <Link href="/interviews">Interviews</Link>
         <Link href="/resources">Resources</Link>
         <Dropdown>
-          <DropdownButton className="inline-flex items-center gap-x-2 focus:not-data-focus:outline-none">
+          <DropdownButton className="inline-flex items-center focus:not-data-focus:outline-none">
             Account
-            <ChevronDownIcon className="stroke-gray-950 dark:stroke-white" />
           </DropdownButton>
           <DropdownMenu anchor="bottom end">
             <DropdownItem href="#">Settings</DropdownItem>
