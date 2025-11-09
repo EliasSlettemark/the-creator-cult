@@ -36,9 +36,19 @@ export async function GET(request: NextRequest) {
       }
     | undefined;
 
-  if (!sessionUser?.id) {
-    return NextResponse.redirect(new URL("/auth?error=unauthenticated", request.url));
-  }
+  const demoUserId = process.env.NEXT_PUBLIC_DEMO_USER_ID || "demo-user";
+
+  const targetUser = sessionUser?.id
+    ? {
+        id: sessionUser.id,
+        name: sessionUser.name ?? sessionUser.email ?? "Creator",
+        image: sessionUser.image ?? null,
+      }
+    : {
+        id: demoUserId,
+        name: "User",
+        image: null,
+      };
 
   const clientKey = process.env.TIKTOK_CLIENT_KEY;
   const clientSecret = process.env.TIKTOK_CLIENT_SECRET;
@@ -93,9 +103,9 @@ export async function GET(request: NextRequest) {
     );
 
     const { error } = await supabase.from("accounts").insert({
-      user_id: sessionUser.id,
-      username: sessionUser.name ?? sessionUser.email ?? "Creator",
-      profile_pic_url: sessionUser.image,
+      user_id: targetUser.id,
+      username: targetUser.name,
+      profile_pic_url: targetUser.image,
       display_name,
       avatar_url,
       access_token,
