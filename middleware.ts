@@ -14,23 +14,33 @@ async function middleware(req: NextRequestWithAuth) {
     return NextResponse.next();
   }
 
-  const { sdk } = getSdk(req);
-  if (!sdk) return NextResponse.redirect(new URL("/auth", req.nextUrl.origin));
+  try {
+    const { sdk } = getSdk(req);
+    if (!sdk) return NextResponse.redirect(new URL("/auth", req.nextUrl.origin));
 
-  const user = await sdk?.retrieveUsersProfile({});
-  if (!user) return NextResponse.redirect(new URL("/auth", req.nextUrl.origin));
+    const user = await sdk?.retrieveUsersProfile({});
+    if (!user) return NextResponse.redirect(new URL("/auth", req.nextUrl.origin));
 
-  const membership = await findProduct(sdk, ALLOWED_PRODUCTS);
+    const membership = await findProduct(sdk, ALLOWED_PRODUCTS);
 
-  if (membership && req.nextUrl.pathname === "/") {
-    return NextResponse.redirect(new URL("/dashboard", req.nextUrl.origin));
+    if (membership && req.nextUrl.pathname === "/") {
+      return NextResponse.redirect(new URL("/dashboard", req.nextUrl.origin));
+    }
+
+    if (membership) return NextResponse.next();
+
+    return NextResponse.redirect(
+      getPurchaseLink(RECOMMENDED_PLAN, req.nextUrl.pathname, req.nextUrl)
+    );
+  } catch (error: any) {
+    console.error("Middleware error:", error);
+    // If there's an API error (like Unauthorized), redirect to auth
+    if (error?.message?.includes("Unauthorized") || error?.status === 401) {
+      return NextResponse.redirect(new URL("/auth", req.nextUrl.origin));
+    }
+    // For other errors, still redirect to auth to be safe
+    return NextResponse.redirect(new URL("/auth", req.nextUrl.origin));
   }
-
-  if (membership) return NextResponse.next();
-
-  return NextResponse.redirect(
-    getPurchaseLink(RECOMMENDED_PLAN, req.nextUrl.pathname, req.nextUrl)
-  );
 }
 
 export default withAuth(middleware, {
