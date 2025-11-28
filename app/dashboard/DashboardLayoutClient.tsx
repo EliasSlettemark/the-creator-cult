@@ -293,7 +293,7 @@ const DashboardLayout = ({
                           <span className="flex items-center gap-x-2">
                             <img
                               alt=""
-                              src="/icon.png"
+                              src="/logo.svg" 
                               className="size-10 rounded-full"
                             />
                             <Text>The Creator Cult</Text>
