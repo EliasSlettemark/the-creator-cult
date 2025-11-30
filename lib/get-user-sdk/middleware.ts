@@ -12,9 +12,17 @@ const getSdk = (req: NextRequestWithAuth) => {
   const token = tokenObj?.accessToken || tokenObj?.access_token;
   
   if (!token) {
-    console.error("No access token found in middleware. Token object keys:", tokenObj ? Object.keys(tokenObj) : 'no token object');
+    console.error("No access token found in middleware.");
+    console.error("Token object:", JSON.stringify(tokenObj, null, 2));
+    console.error("Request nextauth:", JSON.stringify({
+      hasToken: !!req.nextauth?.token,
+      tokenKeys: tokenObj ? Object.keys(tokenObj) : [],
+      hasSession: !!req.nextauth?.session,
+    }, null, 2));
     return {};
   }
+  
+  console.log("Access token found, length:", token.length);
   
   return {
     sdk: new WhopSDK({ TOKEN: token as string }).userOAuth,
