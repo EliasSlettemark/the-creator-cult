@@ -7,15 +7,17 @@ import { NextRequestWithAuth } from "next-auth/middleware";
  */
 const getSdk = (req: NextRequestWithAuth) => {
   // Access token from NextAuth JWT
-  const token = (req.nextauth?.token as any)?.accessToken as string | undefined;
+  // Try multiple possible property paths
+  const tokenObj = req.nextauth?.token as any;
+  const token = tokenObj?.accessToken || tokenObj?.access_token;
   
   if (!token) {
-    console.error("No access token found in middleware. Token object:", req.nextauth?.token);
+    console.error("No access token found in middleware. Token object keys:", tokenObj ? Object.keys(tokenObj) : 'no token object');
     return {};
   }
   
   return {
-    sdk: new WhopSDK({ TOKEN: token }).userOAuth,
+    sdk: new WhopSDK({ TOKEN: token as string }).userOAuth,
   };
 };
 
