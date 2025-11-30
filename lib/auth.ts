@@ -37,9 +37,11 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
       }
+      // Store access token when account is present (during OAuth flow)
       if (account) {
         token.accessToken = account.access_token;
       }
+      // Always return the token (preserving accessToken if it exists)
       return token;
     },
   },
