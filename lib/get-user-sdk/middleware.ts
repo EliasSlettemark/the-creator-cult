@@ -1,4 +1,4 @@
-import { WhopSDK } from "@whop-sdk/core";
+import { WhopSDK } from "@whop-sdk/core/browser";
 import { NextRequestWithAuth } from "next-auth/middleware";
 
 /**
@@ -6,26 +6,10 @@ import { NextRequestWithAuth } from "next-auth/middleware";
  * @in middleware
  */
 const getSdk = (req: NextRequestWithAuth) => {
-  // Access token from NextAuth JWT
-  // Try multiple possible property paths
-  const tokenObj = req.nextauth?.token as any;
-  const token = tokenObj?.accessToken || tokenObj?.access_token;
-  
-  if (!token) {
-    console.error("No access token found in middleware.");
-    console.error("Token object:", JSON.stringify(tokenObj, null, 2));
-    console.error("Request nextauth:", JSON.stringify({
-      hasToken: !!req.nextauth?.token,
-      tokenKeys: tokenObj ? Object.keys(tokenObj) : [],
-      hasSession: !!req.nextauth?.session,
-    }, null, 2));
-    return {};
-  }
-  
-  console.log("Access token found, length:", token.length);
-  
+  const token = req.nextauth.token?.accessToken as string;
+  if (!token) return {};
   return {
-    sdk: new WhopSDK({ TOKEN: token as string }).userOAuth,
+    sdk: new WhopSDK({ TOKEN: token }).userOAuth,
   };
 };
 

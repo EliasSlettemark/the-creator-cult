@@ -15,8 +15,18 @@ async function middleware(req: NextRequestWithAuth) {
   }
 
   try {
+    // Debug: Log token structure
+    console.log("Middleware - Token structure:", {
+      hasToken: !!req.nextauth?.token,
+      tokenKeys: req.nextauth?.token ? Object.keys(req.nextauth.token) : [],
+      hasSession: !!req.nextauth?.session,
+    });
+    
     const { sdk } = getSdk(req);
-    if (!sdk) return NextResponse.redirect(new URL("/auth", req.nextUrl.origin));
+    if (!sdk) {
+      console.error("Middleware - No SDK created, redirecting to auth");
+      return NextResponse.redirect(new URL("/auth", req.nextUrl.origin));
+    }
 
     const user = await sdk?.retrieveUsersProfile({});
     if (!user) return NextResponse.redirect(new URL("/auth", req.nextUrl.origin));

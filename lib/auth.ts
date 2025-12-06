@@ -34,15 +34,12 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
     async jwt({ token, user, account, profile, isNewUser }) {
-      // Store user ID when user is present
       if (user) {
         token.id = user.id;
       }
-      // Store access token when account is present (during initial OAuth flow)
       if (account) {
         token.accessToken = account.access_token;
       }
-      // Return token (accessToken will persist across requests if it was set)
       return token;
     },
   },
