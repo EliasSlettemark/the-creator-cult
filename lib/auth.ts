@@ -1,5 +1,12 @@
 import type { NextAuthOptions } from "next-auth";
 
+console.log("Auth Config Debug:");
+console.log("Client ID exists:", !!process.env.NEXT_PUBLIC_WHOP_CLIENT_ID);
+console.log("Client ID length:", process.env.NEXT_PUBLIC_WHOP_CLIENT_ID?.length || 0);
+console.log("Client Secret exists:", !!process.env.WHOP_CLIENT_SECRET);
+console.log("Client Secret length:", process.env.WHOP_CLIENT_SECRET?.length || 0);
+console.log("Client ID first 10 chars:", process.env.NEXT_PUBLIC_WHOP_CLIENT_ID?.substring(0, 10) || "NOT SET");
+
 export const authOptions: NextAuthOptions = {
   providers: [
     {
