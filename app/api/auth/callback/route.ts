@@ -1,4 +1,3 @@
-// http://localhost:3000/api/auth/callback/tiktok?code=tj9R91EhtezcGDEJ5_mrzDIE_XAIKDPdU3velowZJg55Vnn8O9CqFr-4EIJuy8v3ub1wVzPY1qRR6zW-o7K3fz6I9SsLB1-d3D6KL3AnPGP0tfb5OVGeqN7O6XGdDixuxMov2aOeP70DbI5ALlfW3YqziGz0RiynIxi5PXoaND5WmYUF83sI59rnhBskdNza*0%215691.e1&scopes=user.info.basic%2Cvideo.publish%2Cvideo.upload%2Cvideo.list
 import { NextResponse } from "next/server";
 import axios from "axios";
 import { createClient } from "@supabase/supabase-js";
@@ -14,7 +13,7 @@ export async function GET(request: Request) {
   if (!code) {
     return NextResponse.json({ error: "Code not found" }, { status: 404 });
   }
-
+  
   const supabase = createClient(
     process.env.SUPABASE_URL as string,
     process.env.SUPABASE_ANON_KEY as string
