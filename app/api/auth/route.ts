@@ -12,21 +12,38 @@ export async function POST(req: Request) {
   const client_secret = process.env.WHOP_SECRET!;
   const redirect_uri = process.env.NEXT_PUBLIC_WHOP_REDIRECT_URI!;
   const product_id = process.env.NEXT_PUBLIC_WHOP_PRODUCT_ID!;
+  // Exchange code for token (OAuth 2.0 standard uses form-encoded)
+  const params = new URLSearchParams();
+  params.append("grant_type", "authorization_code");
+  params.append("code", code);
+  params.append("client_id", client_id);
+  params.append("client_secret", client_secret);
+  params.append("redirect_uri", redirect_uri);
 
-  // Exchange code for token
-  const { data: tokenData } = await axios.post(
-    "https://api.whop.com/v5/oauth/token",
-    {
-      grant_type: "authorization_code",
-      code,
-      client_id,
-      client_secret,
+  let tokenData;
+  try {
+    const response = await axios.post(
+      "https://api.whop.com/v5/oauth/token",
+      params.toString(),
+      {
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      }
+    );
+    tokenData = response.data;
+  } catch (error: any) {
+    console.error("OAuth token exchange error:", {
+      status: error.response?.status,
+      error: error.response?.data?.error,
+      error_description: error.response?.data?.error_description,
+      client_id: client_id?.substring(0, 20),
+      client_secret_length: client_secret?.length,
+      client_secret_starts_with: client_secret?.substring(0, 15),
       redirect_uri,
-    },
-    {
-      headers: { "Content-Type": "application/json" },
-    }
-  );
+      message: "Check: 1) Client ID/Secret match, 2) Redirect URI matches exactly in Whop dashboard",
+    });
+    throw error;
+  }
+  
   const accessToken = tokenData.access_token;
 
   // Get user info and memberships
