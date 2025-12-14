@@ -72,33 +72,16 @@ const DashboardLayout = ({
   userProfile?: any;
 }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<any>(userProfile || null);
+  const [loading, setLoading] = useState(false);
   const [windowWidth, setWindowWidth] = useState(0);
   const router = useRouter();
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch("/api/auth/session");
-        const session = await response.json();
-
-        if (!session || !session.user) {
-          router.push("/auth");
-          return;
-        }
-
-        setUser(session.user);
-      } catch (error) {
-        console.error("Error checking auth:", error);
-        router.push("/auth");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, [router]);
+    if (userProfile) {
+      setUser(userProfile);
+    }
+  }, [userProfile]);
 
   useEffect(() => {
     const getWindowWidth = () => {

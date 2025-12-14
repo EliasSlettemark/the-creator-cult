@@ -3,7 +3,6 @@
 import { Button, Theme } from "frosted-ui";
 import localFont from "next/font/local";
 import WhopLogo from "./WhopLogo";
-import { signIn } from "next-auth/react";
 
 const interVariable = localFont({
   src: "../../fonts/InterVariable.woff2",
@@ -11,39 +10,32 @@ const interVariable = localFont({
 });
 
 const AuthClient = () => {
+  const handleWhopLogin = () => {
+    const clientId = process.env.NEXT_PUBLIC_WHOP_CLIENT_ID;
+    const redirectUri = process.env.NEXT_PUBLIC_WHOP_REDIRECT_URI;
+    
+    const state = Math.random().toString(36).substring(2, 15);
+    localStorage.setItem("whopAuthState", state);
+    
+    window.location.href = `https://whop.com/oauth?client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}`;
+  };
+
   return (
     <html lang="en" suppressHydrationWarning className={interVariable.variable}>
       <body>
         <Theme asChild appearance="dark" grayColor="gray" accentColor="blue">
-          <div id="root" className="w-full h-screen bg-gray-1 flex items-center justify-center">
-            <div
-              className="absolute inset-0 bg-panel-translucent -z-[1]"
-              style={{ filter: "url(#myFilter" }}
-            />
+          <div className="flex flex-col min-h-screen items-center justify-center gap-4">
+            <WhopLogo className="h-[120px] w-[120px]" />
             <Button
-              variant="classic"
               size="4"
-              onClick={() => signIn("whop",)}
+              variant="solid"
+              color="orange"
+              onClick={handleWhopLogin}
             >
-              Sign in with <WhopLogo className="w-[137px] h-auto" />
+              Login with Whop
             </Button>
           </div>
         </Theme>
-        <svg>
-          <defs>
-            <filter id="myFilter">
-              <feTurbulence
-                type="fractalNoise"
-                baseFrequency="0.55"
-                numOctaves="2"
-              />
-              <feComponentTransfer>
-                <feFuncA type="linear" slope="89" intercept="-15" />
-              </feComponentTransfer>
-              <feComposite in="SourceGraphic" operator="in" />
-            </filter>
-          </defs>
-        </svg>
       </body>
     </html>
   );

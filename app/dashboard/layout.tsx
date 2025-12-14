@@ -1,29 +1,24 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import getSdk from "@/lib/get-user-sdk/app";
+import { cookies } from "next/headers";
 import DashboardLayout from "./DashboardLayoutClient";
-import { Spinner } from "frosted-ui";
 
 export default async function Layout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession(authOptions);
+  const cookieStore = cookies();
+  const userCookie = cookieStore.get("whop_user");
+  const isMember = cookieStore.get("whop_member")?.value === "true";
 
-  if (!session?.user) {
+  if (!isMember || !userCookie) {
     return null;
   }
 
-  const { sdk } = await getSdk();
-  const userProfile = await sdk?.retrieveUsersProfile({});
-
-  if (!userProfile) {
-    return (
-      <div className="w-full h-[100vh] bg-gray-1 flex items-center justify-center">
-        <Spinner size="3" />
-      </div>
-    );
+  let userProfile;
+  try {
+    userProfile = JSON.parse(userCookie.value);
+  } catch {
+    return null;
   }
 
   return (

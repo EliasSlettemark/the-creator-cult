@@ -1,8 +1,18 @@
-import getSdk from "@/lib/get-user-sdk/app";
+import { cookies } from "next/headers";
 import HomeClient from "@/app/dashboard/HomeClient";
 
 const HomePage = async () => {
-  const { sdk, user } = await getSdk();
+  const cookieStore = cookies();
+  const userCookie = cookieStore.get("whop_user");
+
+  let user = null;
+  if (userCookie) {
+    try {
+      user = JSON.parse(userCookie.value);
+    } catch {
+      user = null;
+    }
+  }
 
   return <HomeClient user={user} />;
 };

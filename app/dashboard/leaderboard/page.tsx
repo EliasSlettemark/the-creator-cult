@@ -31,7 +31,6 @@ import {
 } from "@/components/breadcrumbs";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { createClient } from "@supabase/supabase-js";
-import getSdk from "@/lib/get-user-sdk/app";
 import React, { useEffect, useState } from "react";
 import Countdown from "@/components/countdown";
 import Image from "next/image";
@@ -155,12 +154,6 @@ const WhopSVG = () => {
 };
 
 const Leaderboard = async () => {
-  const { sdk } = await getSdk();
-
-  if (!sdk) {
-    return null;
-  }
-
   // Function to determine user rank based on monthly views
   const getUserRank = (views: number): string => {
     if (views >= 3000000) return "ALGO HACKER";
@@ -189,13 +182,25 @@ const Leaderboard = async () => {
     );
   }
 
-  const userProfile = await sdk.retrieveUsersProfile({});
+  // Get user from cookie
+  const { cookies } = await import("next/headers");
+  const cookieStore = cookies();
+  const userCookie = cookieStore.get("whop_user");
+  
+  let user = null;
+  if (userCookie) {
+    try {
+      user = JSON.parse(userCookie.value);
+    } catch {
+      user = null;
+    }
+  }
 
   const leaderboard = leaderboardData?.find(
-    (item) => item.user_id === userProfile.id
+    (item) => item.user_id === user?.id
   );
   const leaderboardIndex = leaderboardData?.findIndex(
-    (item) => item.user_id === userProfile.id
+    (item) => item.user_id === user?.id
   );
 
   return (

@@ -6,7 +6,8 @@ console.log("Client ID length:", process.env.NEXT_PUBLIC_WHOP_CLIENT_ID?.length 
 console.log("Client Secret exists:", !!process.env.WHOP_CLIENT_SECRET);
 console.log("Client Secret length:", process.env.WHOP_CLIENT_SECRET?.length || 0);
 console.log("Client ID first 10 chars:", process.env.NEXT_PUBLIC_WHOP_CLIENT_ID?.substring(0, 10) || "NOT SET");
-
+console.log("NEXTAUTH_URL:", process.env.NEXTAUTH_URL || "NOT SET");
+console.log("Expected redirect URI:", `${process.env.NEXTAUTH_URL || "https://www.thecreatorcult.io"}/api/auth/callback/whop`);
 export const authOptions: NextAuthOptions = {
   providers: [
     {
@@ -18,6 +19,8 @@ export const authOptions: NextAuthOptions = {
       userinfo: "https://api.whop.com/api/v5/me",
       clientId: process.env.NEXT_PUBLIC_WHOP_CLIENT_ID,
       clientSecret: process.env.WHOP_CLIENT_SECRET,
+      // Ensure redirect URI matches exactly
+      checks: ["state"],
       allowDangerousEmailAccountLinking: true,
       profile(profile: {
         id: string;
