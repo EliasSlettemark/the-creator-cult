@@ -24,7 +24,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "SDK not found" }, { status: 404 });
   }
 
-  const user = await sdk?.retrieveUsersProfile({});
+  const user = await sdk?.retrieveUsersProfile({})
 
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
