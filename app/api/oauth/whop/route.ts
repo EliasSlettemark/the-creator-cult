@@ -66,18 +66,20 @@ export async function POST(req: Request) {
 
   // Set cookies if member
   if (isMember) {
+    // Always use secure cookies in production (Vercel uses HTTPS)
+    const isProduction = !!process.env.VERCEL || process.env.NODE_ENV === "production";
     res.cookies.set("whop_user", JSON.stringify(user), {
       path: "/",
       maxAge: 86400,
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: isProduction,
       sameSite: "lax",
     });
     res.cookies.set("whop_member", "true", {
       path: "/",
       maxAge: 86400,
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: isProduction,
       sameSite: "lax",
     });
   }

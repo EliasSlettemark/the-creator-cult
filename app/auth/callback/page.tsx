@@ -8,7 +8,9 @@ export default function CallbackPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const code = searchParams?.get("code");
+    if (!searchParams) return;
+    
+    const code = searchParams.get("code");
 
     if (code) {
       fetch("/api/oauth/whop", {
@@ -40,4 +42,3 @@ export default function CallbackPage() {
     </div>
   );
 }
-
