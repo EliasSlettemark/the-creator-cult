@@ -70,19 +70,14 @@ const DashboardLayout = ({
   children: React.ReactNode;
   userProfile?: any;
 }) => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [user, setUser] = useState<any>(userProfile || null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [windowWidth, setWindowWidth] = useState(0);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    if (userProfile) {
-      setUser(userProfile);
-    }
-  }, [userProfile]);
-
-  useEffect(() => {
+    setMounted(true);
     const getWindowWidth = () => {
       setWindowWidth(window.innerWidth);
     };
@@ -96,40 +91,27 @@ const DashboardLayout = ({
 
   if (loading) {
     return (
-      <html
-        lang="en"
-        suppressHydrationWarning
-        className={"frosted-ui " + interVariable.variable}
-      >
-        <body>
-          <Theme asChild appearance="dark" grayColor="gray" accentColor="blue">
-            <div className="w-full h-[100vh] bg-gray-1 flex items-center justify-center">
-              <Spinner size="3" />
-            </div>
-          </Theme>
-        </body>
-      </html>
+      <Theme asChild appearance="dark" grayColor="gray" accentColor="blue">
+        <div className="w-full h-[100vh] bg-gray-1 flex items-center justify-center">
+          <Spinner size="3" />
+        </div>
+      </Theme>
     );
   }
 
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className={"frosted-ui " + interVariable.variable}
-    >
-      <body>
-        <Theme asChild appearance="dark" grayColor="gray" accentColor="blue">
-          <div
-            id="root"
-            className="w-full h-[100vh] bg-gray-1 flex flex-no-wrap p-2"
-          >
-            <div>
-              <Dialog
-                open={sidebarOpen}
-                onClose={setSidebarOpen}
-                className="relative z-50 lg:hidden"
-              >
+    <Theme asChild appearance="dark" grayColor="gray" accentColor="blue">
+      <div
+        id="root"
+        className={`w-full h-[100vh] bg-gray-1 flex flex-no-wrap p-2 overflow-x-hidden ${interVariable.variable}`}
+      >
+        <div>
+              {mounted && (
+                <Dialog
+                  open={sidebarOpen}
+                  onClose={setSidebarOpen}
+                  className="relative z-50 lg:hidden"
+                >
                 <DialogBackdrop
                   transition
                   className="fixed inset-0 transition-opacity duration-300 ease-linear data-closed:opacity-0"
@@ -167,9 +149,9 @@ const DashboardLayout = ({
                                     <div className="flex items-center gap-3">
                                       <Avatar
                                         src={userProfile?.profile_pic_url}
-                                        fallback={user?.name?.charAt(0) || "U"}
+                                        fallback={userProfile?.username?.charAt(0)?.toUpperCase() || userProfile?.name?.charAt(0)?.toUpperCase() || "U"}
                                       />
-                                      <Text>{user?.name || "User"}</Text>
+                                      <Text>{userProfile?.username || userProfile?.name || "User"}</Text>
                                     </div>
                                     <ChevronDownIcon />
                                   </div>
@@ -193,9 +175,9 @@ const DashboardLayout = ({
                                 <CalendarIcon width="24" height="24" />
                                 Calendar
                               </SidebarButton>
-                              <SidebarButton href="/dashboard/resources">
+                              <SidebarButton href="/dashboard/ai">
                                 <FileTextIcon width="24" height="24" />
-                                Resources
+                                Script Generator
                               </SidebarButton>
                             </div>
                           </div>
@@ -206,6 +188,7 @@ const DashboardLayout = ({
                   </DialogPanel>
                 </div>
               </Dialog>
+              )}
 
               <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
                 <aside className="h-full w-[300px] py-2 px-6">
@@ -218,9 +201,9 @@ const DashboardLayout = ({
                               <div className="flex items-center gap-3">
                                 <Avatar
                                   src={userProfile?.profile_pic_url}
-                                  fallback={user?.name?.charAt(0) || "U"}
+                                  fallback={userProfile?.username?.charAt(0)?.toUpperCase() || userProfile?.name?.charAt(0)?.toUpperCase() || "U"}
                                 />
-                                <Text>{user?.name || "User"}</Text>
+                                <Text>{userProfile?.username || userProfile?.name || "User"}</Text>
                               </div>
                               <ChevronDownIcon />
                             </div>
@@ -244,9 +227,9 @@ const DashboardLayout = ({
                           <CalendarIcon width="24" height="24" />
                           Calendar
                         </SidebarButton>
-                        <SidebarButton href="/dashboard/resources">
+                        <SidebarButton href="/dashboard/ai">
                           <FileTextIcon width="24" height="24" />
-                          Resources
+                          Script Generator
                         </SidebarButton>
                       </div>
                     </div>
@@ -297,10 +280,8 @@ const DashboardLayout = ({
                 </main>
               </div>
             </div>
-          </div>
-        </Theme>
-      </body>
-    </html>
+        </div>
+      </Theme>
   );
 };
 

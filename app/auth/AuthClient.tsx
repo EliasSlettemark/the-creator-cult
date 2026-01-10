@@ -11,12 +11,13 @@ const interVariable = localFont({
 
 const AuthClient = () => {
   const handleWhopLogin = () => {
+    //Your Client ID generated at https://whop.com/dashboard/settings/oauth
     const clientId = process.env.NEXT_PUBLIC_WHOP_CLIENT_ID;
+    // This needs to be the Redirect URI set in https://whop.com/dashboard/settings/oauth
     const redirectUri = process.env.NEXT_PUBLIC_WHOP_REDIRECT_URI;
-    
+
     const state = Math.random().toString(36).substring(2, 15);
     localStorage.setItem("whopAuthState", state);
-    
     window.location.href = `https://whop.com/oauth?client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}`;
   };
 

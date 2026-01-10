@@ -9,7 +9,7 @@ export async function POST(req: Request) {
   }
 
   const client_id = process.env.NEXT_PUBLIC_WHOP_CLIENT_ID!;
-  const client_secret = process.env.WHOP_SECRET!;
+  const client_secret = process.env.WHOP_CLIENT_SECRET!;
   const redirect_uri = process.env.NEXT_PUBLIC_WHOP_REDIRECT_URI!;
   const product_id = process.env.NEXT_PUBLIC_WHOP_PRODUCT_ID!;
   // Exchange code for token (OAuth 2.0 standard uses form-encoded)

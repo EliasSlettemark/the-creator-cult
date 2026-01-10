@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import axios from "axios";
+import querystring from "querystring";
 
 export const dynamic = "force-dynamic";
 
@@ -98,6 +99,9 @@ export async function GET() {
     profile_pic_url?: string;
     avatar_url?: string;
     access_token: string;
+    refresh_token?: string;
+    access_token_expires_at?: string;
+    refresh_token_expires_at?: string;
     created_at: string;
   };
 
@@ -144,8 +148,65 @@ export async function GET() {
     };
 
     for (const account of userAccount.accounts) {
-      const accessToken = account.access_token;
+      let accessToken = account.access_token;
       if (!accessToken) continue;
+
+      // Check if token is expired or about to expire (within 5 minutes)
+      const expiresAt = account.access_token_expires_at 
+        ? new Date(account.access_token_expires_at).getTime() 
+        : null;
+      const now = Date.now();
+      const fiveMinutes = 5 * 60 * 1000;
+      
+      // Try to refresh token if expired or about to expire
+      if (!expiresAt || (expiresAt - now) < fiveMinutes) {
+        if (account.refresh_token) {
+          try {
+            const params = {
+              client_key: process.env.TIKTOK_CLIENT_KEY!,
+              client_secret: process.env.TIKTOK_CLIENT_SECRET!,
+              grant_type: "refresh_token",
+              refresh_token: account.refresh_token,
+            };
+
+            const {
+              data: { access_token, expires_in, refresh_token, refresh_expires_in },
+            } = await axios.post(
+              "https://open.tiktokapis.com/v2/oauth/token/",
+              querystring.stringify(params),
+              {
+                headers: {
+                  "Content-Type": "application/x-www-form-urlencoded",
+                  "Cache-Control": "no-cache",
+                },
+              }
+            );
+
+            // Update account with new tokens
+            await supabase
+              .from("accounts")
+              .update({
+                access_token,
+                refresh_token,
+                access_token_expires_at: new Date(Date.now() + expires_in * 1000).toISOString(),
+                refresh_token_expires_at: new Date(
+                  Date.now() + refresh_expires_in * 1000
+                ).toISOString(),
+              })
+              .eq("id", account.id);
+
+            accessToken = access_token;
+          } catch (refreshError: any) {
+            console.log(`Error refreshing token for account ${account.id}:`, refreshError.response?.status || refreshError.message);
+            // If refresh fails, skip this account
+            continue;
+          }
+        } else {
+          // No refresh token available, skip this account
+          console.log(`No refresh token available for account ${account.id}, skipping`);
+          continue;
+        }
+      }
 
       try {
         if (!users[userId].profile_pic_url) {
@@ -175,29 +236,37 @@ export async function GET() {
         let videos: any[] = [];
 
         while (hasMore) {
-          const response = await axios.post(
-            "https://open.tiktokapis.com/v2/video/list/?fields=id,create_time,view_count,cover_image_url,title,like_count",
-            {
-              max_count: 20,
-              ...(cursor > 0 && { cursor }),
-            },
-            {
-              headers: {
-                Authorization: `Bearer ${accessToken}`,
-                "Content-Type": "application/json",
+          try {
+            const response = await axios.post(
+              "https://open.tiktokapis.com/v2/video/list/?fields=id,create_time,view_count,cover_image_url,title,like_count",
+              {
+                max_count: 20,
+                ...(cursor > 0 && { cursor }),
               },
+              {
+                headers: {
+                  Authorization: `Bearer ${accessToken}`,
+                  "Content-Type": "application/json",
+                },
+              }
+            );
+
+            const fetchedVideos = response.data?.data?.videos || [];
+            videos = [...videos, ...fetchedVideos];
+
+            hasMore = response.data?.data?.has_more || false;
+            cursor = response.data?.data?.cursor || 0;
+
+            if (cursor > 0 && cursor < startOfMonth * 1000) {
+              break;
             }
-          );
-
-          videos = [...videos, ...(response.data?.data?.videos || [])];
-
-          hasMore = response.data?.data?.has_more || false;
-          cursor = response.data?.data?.cursor || 0;
-
-          if (cursor > 0 && cursor < startOfMonth * 1000) {
-            break;
+          } catch (videoError: any) {
+            console.log(`Error fetching videos for account ${account.id}:`, videoError.response?.data || videoError.message);
+            hasMore = false; // Stop trying to fetch more videos
           }
         }
+        
+        console.log(`Fetched ${videos.length} videos for account ${account.id} (user: ${account.username})`);
 
         users[userId].videos = [...users[userId].videos, ...videos];
         users[userId].followers += followerCount;
@@ -216,8 +285,8 @@ export async function GET() {
             }
           }
         }
-      } catch (error) {
-        console.log(`Error processing account ${account.id}:`, error);
+      } catch (error: any) {
+        console.log(`Error processing account ${account.id}:`, error.response?.data || error.message);
       }
     }
 
@@ -225,17 +294,22 @@ export async function GET() {
   }
 
   for (const [userId, userData] of Object.entries(users)) {
-    if (userData.videos.length === 0) continue;
+    // Skip demo/test users
+    if (userData.name?.toLowerCase().includes('demo') || userId?.toLowerCase().includes('demo')) continue;
 
-    const latestVideo = userData.videos.reduce((a: any, b: any) =>
-      a.create_time > b.create_time ? a : b
-    );
+    // Get latest video if available
+    const latestVideo = userData.videos.length > 0 
+      ? userData.videos.reduce((a: any, b: any) =>
+          a.create_time > b.create_time ? a : b
+        )
+      : null;
     
-    const sortedByViews = [...userData.videos].sort(
-      (a, b) => b.view_count - a.view_count
-    );
-    const latestVideoRank =
-      sortedByViews.findIndex((v) => v.id === latestVideo.id) + 1;
+    const sortedByViews = userData.videos.length > 0
+      ? [...userData.videos].sort((a, b) => b.view_count - a.view_count)
+      : [];
+    const latestVideoRank = latestVideo && sortedByViews.length > 0
+      ? sortedByViews.findIndex((v) => v.id === latestVideo.id) + 1
+      : null;
 
     const upsertData = {
       user_id: userId,
@@ -247,16 +321,34 @@ export async function GET() {
       videos_this_month: userData.videos_this_month,
       likes_this_month: userData.likes_this_month,
       followers: userData.followers,
-      latest_video_id: latestVideo.id,
-      latest_video_views: latestVideo.view_count,
-      latest_video_rank: latestVideoRank,
-      latest_video_cover: latestVideo.cover_image_url,
-      latest_video_title: latestVideo.title,
+      latest_video_id: latestVideo?.id || null,
+      latest_video_views: latestVideo?.view_count || 0,
+      latest_video_rank: latestVideoRank || null,
+      latest_video_cover: latestVideo?.cover_image_url || null,
+      latest_video_title: latestVideo?.title || null,
     };
 
     const { data, error } = await supabase
       .from("leaderboard")
       .upsert(upsertData, { onConflict: "user_id" });
+  }
+
+  // Clean up demo/test users from leaderboard
+  const { data: allLeaderboardEntries } = await supabase.from("leaderboard").select("*");
+  if (allLeaderboardEntries) {
+    const demoUserIds = allLeaderboardEntries
+      .filter(entry => 
+        entry.username?.toLowerCase().includes('demo') || 
+        entry.user_id?.toLowerCase().includes('demo')
+      )
+      .map(entry => entry.user_id);
+    
+    if (demoUserIds.length > 0) {
+      await supabase
+        .from("leaderboard")
+        .delete()
+        .in("user_id", demoUserIds);
+    }
   }
 
   const { data: leaderboard } = await supabase.from("leaderboard").select("*");

@@ -26,5 +26,13 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ data });
+  // Filter out demo/test users
+  const filteredData = data?.filter(
+    (entry) => 
+      entry.username && 
+      !entry.username.toLowerCase().includes('demo') && 
+      !entry.user_id?.toLowerCase().includes('demo')
+  ) || [];
+
+  return NextResponse.json({ data: filteredData });
 } 

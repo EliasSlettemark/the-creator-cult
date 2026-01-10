@@ -234,7 +234,7 @@ export default function Dashboard({ user }: { user: any }) {
                   as="div"
                   style={{ fontWeight: "500", textAlign: "center" }}
                 >
-                  {views.toLocaleString()} / {requiredViews.toLocaleString()}{" "}
+                  {views.toLocaleString("en-US")} / {requiredViews.toLocaleString("en-US")}{" "}
                   views → {nextRank} rank
                 </Text>
                 <Text
@@ -357,7 +357,9 @@ export default function Dashboard({ user }: { user: any }) {
                     <Text as="div" size="6" weight="bold">
                       {leaderboard &&
                         leaderboard.length > 0 &&
-                        leaderboard[0].views_this_month}
+                        leaderboard[0].views_this_month
+                        ? leaderboard[0].views_this_month
+                        : 0}
                     </Text>
                   </div>
                 </div>
@@ -436,7 +438,9 @@ export default function Dashboard({ user }: { user: any }) {
                   Your Latest Video
                 </Text>
                 <div className="flex gap-4">
-                  {leaderboard && leaderboard.length > 0 && (
+                  {leaderboard && 
+                   leaderboard.length > 0 && 
+                   leaderboard[0].latest_video_cover && (
                     <Image
                       src={leaderboard[0].latest_video_cover}
                       alt="Latest video cover"

@@ -11,6 +11,7 @@ import { CirclePlayIcon } from "@/icons/circle-play-icon";
 import { CompletedIcon } from "@/icons/completed-icon";
 import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
+import Image from "next/image";
 
 function formatDuration(seconds: number): string {
   let h = Math.floor(seconds / 3600);
@@ -78,18 +79,23 @@ export default function CoursesClient({ modules }: CoursesClientProps) {
   const nextLesson = getNextUnlockedLesson();
 
   return (
-    <div className="relative mx-auto max-w-7xl">
-      <div className="absolute -inset-x-2 top-0 -z-10 h-80 overflow-hidden rounded-t-2xl mask-b-from-60% sm:h-88 md:h-112 lg:-inset-x-4 lg:h-128">
-        <img
-          alt=""
-          src="https://assets.tailwindcss.com/templates/compass/hero-background.png"
-          className="absolute inset-0 h-full w-full mask-l-from-60% object-cover object-center opacity-40"
-        />
+    <div className="relative mx-auto max-w-7xl overflow-x-hidden">
+      <div className="absolute left-1/2 top-0 -z-10 h-80 w-screen -translate-x-1/2 overflow-hidden rounded-t-2xl mask-b-from-60% sm:h-88 md:h-112 lg:h-[500px]">
+        <div className="relative w-full h-full">
+          <Image
+            alt="Course Banner"
+            src="/banner.png"
+            fill
+            className="object-cover object-center"
+            priority
+            sizes="100vw"
+          />
+        </div>
         <div className="absolute inset-0 rounded-t-2xl outline-1 -outline-offset-1 outline-gray-950/10 dark:outline-white/10" />
       </div>
       <div className="mx-auto max-w-6xl">
         <div className="relative">
-          <div className="px-4 pt-48 pb-12 lg:py-24">
+          <div className="px-4 pt-64 pb-12 sm:pt-72 md:pt-96 lg:pt-[420px] lg:pb-24">
             <h1 className="text-2xl/7 font-bold">The Creator Cult</h1>
             <p className="mt-7 max-w-lg text-base/7 text-pretty text-gray-600 dark:text-gray-400">
               The Ultimate Guide to TikTok Shop
@@ -308,3 +314,4 @@ function ContentLink({
     </div>
   );
 }
+

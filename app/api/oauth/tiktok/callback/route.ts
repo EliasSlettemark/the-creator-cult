@@ -1,27 +1,14 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import axios from "axios";
 import querystring from "querystring";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 
-export async function GET(req: NextRequest) {
-  const searchParams = req.nextUrl.searchParams;
-  const code = searchParams.get("code");
-  const state = searchParams.get("state");
-  const error = searchParams.get("error");
-
-  // Handle OAuth errors
-  if (error) {
-    console.error("TikTok OAuth error:", error);
-    return NextResponse.redirect(
-      new URL("/dashboard?error=tiktok_auth_failed", req.url)
-    );
-  }
+export async function POST(req: Request) {
+  const { code, state } = await req.json();
 
   if (!code || !state) {
-    return NextResponse.redirect(
-      new URL("/dashboard?error=tiktok_auth_failed", req.url)
-    );
+    return NextResponse.json({ error: "Missing code or state" }, { status: 400 });
   }
 
   // Verify state matches CSRF token
@@ -29,27 +16,21 @@ export async function GET(req: NextRequest) {
   const csrfStateCookie = cookieStore.get("csrfState");
   
   if (!csrfStateCookie || csrfStateCookie.value !== state) {
-    return NextResponse.redirect(
-      new URL("/dashboard?error=tiktok_auth_failed", req.url)
-    );
+    return NextResponse.json({ error: "Invalid state - CSRF token mismatch" }, { status: 400 });
   }
 
   // Verify user is authenticated
   const userCookie = cookieStore.get("whop_user");
   
   if (!userCookie) {
-    return NextResponse.redirect(
-      new URL("/dashboard?error=not_authenticated", req.url)
-    );
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
   let user;
   try {
     user = JSON.parse(userCookie.value);
   } catch {
-    return NextResponse.redirect(
-      new URL("/dashboard?error=invalid_user_data", req.url)
-    );
+    return NextResponse.json({ error: "Invalid user data" }, { status: 400 });
   }
 
   const userId = user.id;
@@ -57,7 +38,7 @@ export async function GET(req: NextRequest) {
   const clientKey = process.env.TIKTOK_CLIENT_KEY!;
   const clientSecret = process.env.TIKTOK_CLIENT_SECRET!;
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-  const redirectUri = process.env.TIKTOK_REDIRECT_URI || `${baseUrl}/api/auth/callback`;
+  const redirectUri = process.env.TIKTOK_REDIRECT_URI || `${baseUrl}/oauth/tiktok/callback`;
 
   // Exchange code for tokens
   try {
@@ -82,39 +63,38 @@ export async function GET(req: NextRequest) {
       }
     );
 
+    // Get user info from TikTok
     const { data: userInfo } = await axios.get(
-      "https://open.tiktokapis.com/v2/user/info/?fields=open_id,union_id,avatar_url,display_name,username",
+      "https://open.tiktokapis.com/v2/user/info/",
       {
+        params: {
+          fields: "open_id,union_id,avatar_url,display_name,username",
+        },
         headers: {
           Authorization: `Bearer ${access_token}`,
-          "Content-Type": "application/json",
         },
       }
     );
 
-    const tiktokUser = userInfo.data?.user;
-    
-    if (!tiktokUser) {
-      console.error("TikTok user info response:", userInfo);
-      return NextResponse.redirect(
-        new URL("/dashboard?error=tiktok_user_info_failed", req.url)
-      );
-    }
+    const tiktokUser = userInfo.data.user;
 
+    // Save account to database
     const supabase = createClient(
       process.env.SUPABASE_URL as string,
       process.env.SUPABASE_ANON_KEY as string
     );
 
-    const { data: existingAccounts } = await supabase
+    // Check if account already exists for this user
+    const { data: existingAccount } = await supabase
       .from("accounts")
       .select("id")
-      .eq("user_id", userId);
-    
-    const existingAccount = existingAccounts && existingAccounts.length > 0 ? existingAccounts[0] : null;
+      .eq("user_id", userId)
+      .eq("open_id", open_id)
+      .single();
 
     const accountData = {
       user_id: userId,
+      open_id: open_id,
       access_token,
       refresh_token,
       access_token_expires_at: new Date(Date.now() + expires_in * 1000).toISOString(),
@@ -125,6 +105,7 @@ export async function GET(req: NextRequest) {
     };
 
     if (existingAccount) {
+      // Update existing account
       const { error } = await supabase
         .from("accounts")
         .update(accountData)
@@ -132,9 +113,7 @@ export async function GET(req: NextRequest) {
 
       if (error) {
         console.error("Error updating account:", error);
-        return NextResponse.redirect(
-          new URL("/dashboard?error=account_update_failed", req.url)
-        );
+        return NextResponse.json({ error: "Failed to update account" }, { status: 500 });
       }
     } else {
       // Create new account
@@ -142,20 +121,16 @@ export async function GET(req: NextRequest) {
 
       if (error) {
         console.error("Error creating account:", error);
-        return NextResponse.redirect(
-          new URL("/dashboard?error=account_creation_failed", req.url)
-        );
+        return NextResponse.json({ error: "Failed to create account" }, { status: 500 });
       }
     }
 
-    // Success - redirect to dashboard
-    return NextResponse.redirect(
-      new URL("/dashboard?success=account_connected", req.url)
-    );
+    return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error("TikTok OAuth error:", error.response?.data || error.message);
-    return NextResponse.redirect(
-      new URL("/dashboard?error=tiktok_auth_failed", req.url)
+    return NextResponse.json(
+      { error: error.response?.data?.error_description || "Failed to authenticate with TikTok" },
+      { status: 500 }
     );
   }
 }

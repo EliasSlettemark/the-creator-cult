@@ -4,10 +4,8 @@ import styles from "../../../../styles/Home.module.css";
 import { Inter } from "next/font/google";
 
 export const metadata = {
-  title: "Whop Powered Application (SSG)",
-  icons: {
-    icon: [{ url: "/logo.svg" }, new URL("/logo.svg", "https://whop.com")],
-  },
+  title: "The Creator Cult - The Ultimate Guide to TikTok Shop",
+  description: "The Ultimate Guide to TikTok Shop",
 };
 
 const inter = Inter({ subsets: ["latin"] });

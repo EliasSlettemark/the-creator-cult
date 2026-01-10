@@ -4,8 +4,13 @@ import type { NextRequest } from "next/server";
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Allow auth pages and API routes
-  if (pathname === "/auth" || pathname.startsWith("/api/auth") || pathname.startsWith("/auth/callback")) {
+  // Allow auth pages, oauth callback, and API routes
+  if (
+    pathname === "/auth" || 
+    pathname.startsWith("/api/") || 
+    pathname.startsWith("/auth/") ||
+    pathname.startsWith("/oauth/")
+  ) {
     return NextResponse.next();
   }
 
@@ -25,5 +30,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/dashboard/:path*", "/auth/:path*"],
+  matcher: ["/", "/dashboard/:path*", "/auth/:path*", "/oauth/:path*"],
 };

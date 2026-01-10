@@ -36,6 +36,7 @@ import Countdown from "@/components/countdown";
 import Image from "next/image";
 import { PageSection } from "@/components/page-section";
 import { getModules } from "@/data/lessons";
+import { cookies } from "next/headers";
 
 const rank = (views: number): string => {
   if (views >= 3000000) return "ALGO HACKER";
@@ -173,6 +174,14 @@ const Leaderboard = async () => {
     .select("*")
     .order("views_this_month", { ascending: false });
 
+  // Filter out demo/test users
+  const filteredLeaderboardData = leaderboardData?.filter(
+    (entry) => 
+      entry.username && 
+      !entry.username.toLowerCase().includes('demo') && 
+      !entry.user_id?.toLowerCase().includes('demo')
+  ) || [];
+
   if (error) {
     console.error("Error fetching leaderboard data:", error);
     return (
@@ -183,7 +192,6 @@ const Leaderboard = async () => {
   }
 
   // Get user from cookie
-  const { cookies } = await import("next/headers");
   const cookieStore = cookies();
   const userCookie = cookieStore.get("whop_user");
   
@@ -196,10 +204,10 @@ const Leaderboard = async () => {
     }
   }
 
-  const leaderboard = leaderboardData?.find(
+  const leaderboard = filteredLeaderboardData.find(
     (item) => item.user_id === user?.id
   );
-  const leaderboardIndex = leaderboardData?.findIndex(
+  const leaderboardIndex = filteredLeaderboardData.findIndex(
     (item) => item.user_id === user?.id
   );
 
@@ -270,73 +278,75 @@ const Leaderboard = async () => {
             </div>
           </Card>
 
-          <Card>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 p-4">
-                <Avatar
-                  className="w-20 h-20"
-                  src={userProfile.profile_pic_url}
-                  fallback={userProfile.username?.charAt(0) || "U"}
-                />
-                <div className="flex flex-col">
-                  <p className="text-gray-a11 text-lg">You are</p>
-                  <div className="flex items-center gap-2">
-                    <Text size="3" weight="medium">
-                      {typeof leaderboardIndex === "number" &&
-                      leaderboardIndex >= 0
-                        ? `#${leaderboardIndex + 1}`
-                        : "Unranked"}
-                    </Text>
-                    <Badge>{rank(leaderboard?.views_this_month || 0)}</Badge>
+          {user && (
+            <Card>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 p-4">
+                  <Avatar
+                    className="w-20 h-20"
+                    src={user.profile_pic_url}
+                    fallback={user.username?.charAt(0) || "U"}
+                  />
+                  <div className="flex flex-col">
+                    <p className="text-gray-a11 text-lg">You are</p>
+                    <div className="flex items-center gap-2">
+                      <Text size="3" weight="medium">
+                        {typeof leaderboardIndex === "number" &&
+                        leaderboardIndex >= 0
+                          ? `#${leaderboardIndex + 1}`
+                          : "Unranked"}
+                      </Text>
+                      <Badge>{rank(leaderboard?.views_this_month || 0)}</Badge>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="flex gap-4 p-4">
-                <Card>
-                  <div
-                    style={{
-                      alignItems: "center",
-                      display: "flex",
-                      padding: "var(--space-4)",
-                    }}
-                  >
-                    <div className="flex flex-col items-center justify-center">
-                      <Text as="div" size="6" weight="bold">
-                        {leaderboard?.views_this_month?.toLocaleString() || "0"}
-                      </Text>
-                      <Text as="div" color="gray">
-                        Views
-                      </Text>
+                <div className="flex gap-4 p-4">
+                  <Card>
+                    <div
+                      style={{
+                        alignItems: "center",
+                        display: "flex",
+                        padding: "var(--space-4)",
+                      }}
+                    >
+                      <div className="flex flex-col items-center justify-center">
+                        <Text as="div" size="6" weight="bold">
+                          {leaderboard?.views_this_month?.toLocaleString("en-US") || "0"}
+                        </Text>
+                        <Text as="div" color="gray">
+                          Views
+                        </Text>
+                      </div>
                     </div>
-                  </div>
-                </Card>
-                <Card>
-                  <div
-                    style={{
-                      alignItems: "center",
-                      display: "flex",
-                      padding: "var(--space-4)",
-                    }}
-                  >
-                    <div className="flex flex-col items-center justify-center">
-                      <Text as="div" size="6" weight="bold">
-                        {leaderboard?.videos_this_month || "0"}
-                      </Text>
-                      <Text as="div" color="gray">
-                        Posts
-                      </Text>
+                  </Card>
+                  <Card>
+                    <div
+                      style={{
+                        alignItems: "center",
+                        display: "flex",
+                        padding: "var(--space-4)",
+                      }}
+                    >
+                      <div className="flex flex-col items-center justify-center">
+                        <Text as="div" size="6" weight="bold">
+                          {leaderboard?.videos_this_month || "0"}
+                        </Text>
+                        <Text as="div" color="gray">
+                          Posts
+                        </Text>
+                      </div>
                     </div>
-                  </div>
-                </Card>
+                  </Card>
+                </div>
               </div>
-            </div>
-          </Card>
+            </Card>
+          )}
 
           <Countdown />
 
           {typeof leaderboardIndex === "number" &&
             leaderboardIndex >= 0 &&
-            leaderboardData && (
+            filteredLeaderboardData && (
               <Card className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950/20 dark:to-blue-950/20 border-green-200 dark:border-green-800">
                 <div className="p-6">
                   <div className="flex items-center justify-between">
@@ -361,14 +371,14 @@ const Leaderboard = async () => {
                             and are{" "}
                             <span className="font-semibold text-blue-600 dark:text-blue-400">
                               {(
-                                leaderboardData[leaderboardIndex - 1]
+                                filteredLeaderboardData[leaderboardIndex - 1]
                                   .views_this_month -
                                 (leaderboard?.views_this_month || 0)
-                              ).toLocaleString()}
+                              ).toLocaleString("en-US")}
                             </span>{" "}
                             views from passing{" "}
                             <span className="font-semibold text-purple-600 dark:text-purple-400">
-                              {leaderboardData[leaderboardIndex - 1].username ||
+                              {filteredLeaderboardData[leaderboardIndex - 1].username ||
                                 "the creator above you"}
                             </span>
                           </>
@@ -382,9 +392,9 @@ const Leaderboard = async () => {
                         <Text size="2" color="gray">
                           Next milestone: Reach{" "}
                           <span className="font-medium">
-                            {leaderboardData[
+                            {filteredLeaderboardData[
                               leaderboardIndex - 1
-                            ].views_this_month?.toLocaleString() || "0"}
+                            ].views_this_month?.toLocaleString("en-US") || "0"}
                           </span>{" "}
                           views to move up to #{leaderboardIndex}
                         </Text>
@@ -411,7 +421,7 @@ const Leaderboard = async () => {
                             className="text-blue-600 dark:text-blue-400"
                           >
                             {(
-                              leaderboardData[leaderboardIndex - 1]
+                              filteredLeaderboardData[leaderboardIndex - 1]
                                 .views_this_month -
                               (leaderboard?.views_this_month || 0)
                             ).toLocaleString()}
@@ -495,8 +505,8 @@ const Leaderboard = async () => {
               <div className="w-32 font-semibold text-right">Monthly Views</div>
             </div>
             <div className="space-y-2">
-              {leaderboardData && leaderboardData.length > 0 ? (
-                leaderboardData.map((entry, index) => (
+              {filteredLeaderboardData && filteredLeaderboardData.length > 0 ? (
+                filteredLeaderboardData.map((entry, index) => (
                   <div
                     key={entry.user_id}
                     className="flex w-full items-center py-2"
@@ -536,7 +546,7 @@ const Leaderboard = async () => {
                     </div>
                     <div className="w-32 text-right">
                       <Text weight="medium">
-                        {entry.views_this_month?.toLocaleString() || "0"}
+                        {entry.views_this_month?.toLocaleString("en-US") || "0"}
                       </Text>
                     </div>
                   </div>
@@ -555,3 +565,5 @@ const Leaderboard = async () => {
 };
 
 export default Leaderboard;
+
+

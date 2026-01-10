@@ -12,3 +12,10 @@ export default async function Page() {
 
   return <CoursesClient modules={modules} />;
 }
+
+
+
+
+
+
+

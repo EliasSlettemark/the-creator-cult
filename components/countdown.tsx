@@ -28,11 +28,18 @@ const getMonthProgress = () => {
   return Math.min(Math.max(progress, 0), 100); // Clamp between 0 and 100
 };
 
+const monthNames = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+];
+
 const Countdown = () => {
   const [timeLeft, setTimeLeft] = useState(getTimeLeftInMonth());
   const [progress, setProgress] = useState(getMonthProgress());
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const interval = setInterval(() => {
       setTimeLeft(getTimeLeftInMonth());
       setProgress(getMonthProgress());
@@ -40,11 +47,14 @@ const Countdown = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Use consistent month name to avoid hydration mismatch (use static array instead of locale-dependent formatting)
+  const monthName = monthNames[new Date().getMonth()];
+
   return (
     <Card className="w-full">
       <div className="flex flex-col items-center gap-4">
         <Badge size="2" className="uppercase">
-          {new Date().toLocaleString("default", { month: "long" })}
+          {monthName}
         </Badge>
         <Card>
           <div className="flex flex-row items-center gap-8">
