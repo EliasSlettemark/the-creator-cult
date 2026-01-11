@@ -4,7 +4,7 @@ import querystring from "querystring";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 
-async function handleTikTokOAuthCode(code: string, state: string) {
+async function handleTikTokOAuthCode(code: string, state: string, redirectUri: string) {
   // Verify state matches CSRF token
   const cookieStore = cookies();
   const csrfStateCookie = cookieStore.get("csrfState");
@@ -31,8 +31,6 @@ async function handleTikTokOAuthCode(code: string, state: string) {
 
   const clientKey = process.env.TIKTOK_CLIENT_KEY!;
   const clientSecret = process.env.TIKTOK_CLIENT_SECRET!;
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-  const redirectUri = process.env.TIKTOK_REDIRECT_URI || `${baseUrl}/api/auth/callback`;
 
   // Exchange code for tokens
   const params = {
@@ -43,18 +41,31 @@ async function handleTikTokOAuthCode(code: string, state: string) {
     redirect_uri: redirectUri,
   };
 
+  let tokenResponse;
+  try {
+    tokenResponse = await axios.post(
+      "https://open.tiktokapis.com/v2/oauth/token/",
+      querystring.stringify(params),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Cache-Control": "no-cache",
+        },
+      }
+    );
+  } catch (error: any) {
+    console.error("TikTok token exchange error:", {
+      status: error.response?.status,
+      error: error.response?.data,
+      redirect_uri: redirectUri,
+      redirect_uri_env: process.env.TIKTOK_REDIRECT_URI,
+    });
+    throw new Error(error.response?.data?.error_description || error.response?.data?.error || "Token exchange failed");
+  }
+
   const {
     data: { access_token, expires_in, refresh_token, refresh_expires_in, open_id },
-  } = await axios.post(
-    "https://open.tiktokapis.com/v2/oauth/token/",
-    querystring.stringify(params),
-    {
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Cache-Control": "no-cache",
-      },
-    }
-  );
+  } = tokenResponse;
 
   // Get user info from TikTok
   const { data: userInfo } = await axios.get(
@@ -131,8 +142,14 @@ export async function GET(req: Request) {
     return NextResponse.redirect(new URL("/dashboard?error=tiktok_auth_failed&reason=missing_params", req.url));
   }
 
+  // Construct the exact redirect URI that was used in the authorization request
+  // This must match exactly what was sent to TikTok in /api/oauth
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const requestUrl = new URL(req.url);
+  const redirectUri = process.env.TIKTOK_REDIRECT_URI || `${requestUrl.origin}${requestUrl.pathname}`;
+
   try {
-    await handleTikTokOAuthCode(code, state);
+    await handleTikTokOAuthCode(code, state, redirectUri);
     return NextResponse.redirect(new URL("/dashboard?success=account_connected", req.url));
   } catch (error: any) {
     console.error("TikTok OAuth error:", error.message || error);

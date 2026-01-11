@@ -122,7 +122,7 @@ export async function POST(req: Request) {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
-      });
+      })
       res.cookies.set("whop_member", "true", {
         path: "/",
         maxAge: 86400,
