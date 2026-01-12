@@ -84,17 +84,17 @@ export async function POST(req: Request) {
       process.env.SUPABASE_ANON_KEY as string
     );
 
-    // Check if account already exists for this user
+    // Check if account already exists for this user and username
+    // Note: The accounts table doesn't have an open_id column, so we use user_id + username to identify accounts
     const { data: existingAccount } = await supabase
       .from("accounts")
       .select("id")
       .eq("user_id", userId)
-      .eq("open_id", open_id)
+      .eq("username", tiktokUser.username)
       .single();
 
     const accountData = {
       user_id: userId,
-      open_id: open_id,
       access_token,
       refresh_token,
       access_token_expires_at: new Date(Date.now() + expires_in * 1000).toISOString(),
