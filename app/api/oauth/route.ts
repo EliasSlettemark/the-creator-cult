@@ -30,14 +30,14 @@ export async function GET() {
     maxAge: 60000,
   });
 
-  // Build URL matching the working version exactly
+  const scopes = process.env.TIKTOK_SCOPES || "user.info.basic,user.info.profile";
+  
   let url = "https://www.tiktok.com/v2/auth/authorize/";
   url += `?client_key=${clientKey}`;
-  url += "&scope=user.info.basic,user.info.profile,user.info.stats,video.list";
+  url += `&scope=${encodeURIComponent(scopes)}`;
   url += "&response_type=code";
   url += `&redirect_uri=${encodeURIComponent(redirectUri)}`;
   url += `&state=${csrfState}`;
 
   return NextResponse.json({ url });
 }
-
