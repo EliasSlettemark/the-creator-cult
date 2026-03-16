@@ -25,7 +25,7 @@ export async function POST(req: Request) {
   if (!userCookie) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
-
+  
   let user;
   try {
     user = JSON.parse(userCookie.value);

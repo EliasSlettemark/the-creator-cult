@@ -6,8 +6,9 @@ export function middleware(req: NextRequest) {
 
   // Allow auth pages, oauth callback, and API routes
   if (
-    pathname === "/auth" || 
-    pathname.startsWith("/api/") || 
+    pathname === "/dashboard" ||
+    pathname === "/auth" ||
+    pathname.startsWith("/api/") ||
     pathname.startsWith("/auth/") ||
     pathname.startsWith("/oauth/")
   ) {

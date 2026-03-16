@@ -9,6 +9,9 @@ const withMDX = require("@next/mdx")({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   pageExtensions: ["ts", "tsx", "js", "jsx", "md", "mdx"],
+  experimental: {
+    serverComponentsExternalPackages: ["canvas", "jsdom", "tiktok-scraper"],
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -28,9 +31,14 @@ const nextConfig = {
       },
       {
         protocol: "https",
+        hostname: "res.cloudinary.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
         hostname: "**",
         pathname: "/**",
-      }
+      },
     ],
   },
 };

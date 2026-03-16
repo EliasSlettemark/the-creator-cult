@@ -13,6 +13,15 @@ import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 
+const FEATURED_IMAGES = [
+  "https://res.cloudinary.com/dtthezmhj/image/upload/v1773673457/Terra_lotus_gjlwci.jpg",
+  "https://res.cloudinary.com/dtthezmhj/image/upload/v1773673457/Podcastle_turypx.webp",
+  "https://res.cloudinary.com/dtthezmhj/image/upload/v1773673455/Nello_pwrsdg.jpg",
+  "https://res.cloudinary.com/dtthezmhj/image/upload/v1773673455/Goli_sak6ns.jpg",
+  "https://res.cloudinary.com/dtthezmhj/image/upload/v1773673454/Arrae_xftetq.jpg",
+  "https://res.cloudinary.com/dtthezmhj/image/upload/v1773673454/Eklipse_roykab.webp",
+];
+
 function formatDuration(seconds: number): string {
   let h = Math.floor(seconds / 3600);
   let m = Math.floor((seconds % 3600) / 60);
@@ -84,7 +93,7 @@ export default function CoursesClient({ modules }: CoursesClientProps) {
         <div className="relative w-full h-full">
           <Image
             alt="Course Banner"
-            src="/banner.png"
+            src="https://res.cloudinary.com/dtthezmhj/image/upload/v1773673457/Terra_lotus_gjlwci.jpg"
             fill
             className="object-cover object-center"
             priority
@@ -162,6 +171,22 @@ export default function CoursesClient({ modules }: CoursesClientProps) {
                 </Link>
               )}
             </div>
+            <div className="mt-12 flex flex-wrap items-center gap-6 sm:gap-8">
+              {FEATURED_IMAGES.map((src, i) => (
+                <div
+                  key={i}
+                  className="relative h-10 w-20 shrink-0 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 object-contain"
+                >
+                  <Image
+                    src={src}
+                    alt=""
+                    fill
+                    className="object-contain"
+                    sizes="80px"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 gap-y-16 pb-10 sm:px-4">
@@ -171,10 +196,7 @@ export default function CoursesClient({ modules }: CoursesClientProps) {
                   <h2 className="text-2xl/7 font-medium tracking-tight text-pretty text-gray-950 dark:text-white">
                     {module.title}
                   </h2>
-                  <p className="mt-4 text-base/7 text-gray-700 sm:text-sm/7 dark:text-gray-400">
-                    {module.description}
-                  </p>
-
+    
                   <ol className="mt-6 space-y-4">
                     {module.lessons.map((lesson, lessonIndex) => {
                       const isCompleted = isLessonCompleted(lesson.id);
@@ -275,15 +297,6 @@ function ContentLink({
             </>
           )}
         </div>
-        <p
-          className={`${
-            isLocked
-              ? "text-gray-400 dark:text-gray-500"
-              : "text-gray-700 dark:text-gray-400"
-          }`}
-        >
-          {description}
-        </p>
         {duration && (
           <div
             className={`sm:hidden ${
